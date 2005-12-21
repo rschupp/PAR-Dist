@@ -1,0 +1,16 @@
+This package was debianized by Florian Ragwitz <florian@mookooh.org> on
+Mon, 30 May 2005 14:57:19 +0200.
+
+It was downloaded from: http://search.cpan.org/~autrijus/PAR-Dist/
+
+The upstream author is: Autrijus Tang <autrijus@autrijus.org>
+
+Copyright 2003, 2004 by Autrijus Tang <autrijus@autrijus.org>.
+
+This program is free software, you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+Perl is distributed under your choice of the GNU General Public License or
+the Artistic License.  On Debian GNU/Linux systems, the complete text of the
+GNU General Public License can be found in `/usr/share/common-licenses/GPL'
+and the Artistic Licence in `/usr/share/common-licenses/Artistic'.

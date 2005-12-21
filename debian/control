@@ -1,0 +1,17 @@
+Source: libpar-dist-perl
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 4.0.2)
+Build-Depends-Indep: perl (>= 5.8.0-7)
+Maintainer: Florian Ragwitz <rafl@debian.org>
+Standards-Version: 3.6.2
+
+Package: libpar-dist-perl
+Architecture: all
+Depends: ${perl:Depends}, ${misc:Depends}, 
+Description: perl module to create and manipulate PAR distributions
+ This module creates and manipulates PAR distributions. They are
+ architecture-specific PAR files, containing everything under blib/ of CPAN
+ distributions after their make or Build stage, a META.yml describing metadata
+ of the original CPAN distribution, and a MANIFEST detailing all files within
+ it. Digitally signed PAR distributions will also contain a SIGNATURE file.
