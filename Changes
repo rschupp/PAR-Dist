@@ -1,0 +1,81 @@
+____________________________________________________________________________
+[  9539] By: autrijus                              on 2004/01/01  10:23:13
+        Log: * This be 0.07.
+             * Do not use an identical README as PAR's. ;-)
+	   ! README
+____________________________________________________________________________
+[  9530] By: autrijus                              on 2004/01/01  05:24:09
+        Log: * bump version and switch to &WriteAll in Makefile.PL.
+	   ! MANIFEST Makefile.PL lib/PAR/Dist.pm
+____________________________________________________________________________
+[  9245] By: autrijus                              on 2003/12/09  00:06:37
+        Log: * manifest.
+	   ! MANIFEST
+____________________________________________________________________________
+[  9244] By: autrijus                              on 2003/12/09  00:04:28
+        Log: * switch to M::I-style Makefile.PL
+	   ! MANIFEST Makefile.PL
+____________________________________________________________________________
+[  9243] By: autrijus                              on 2003/12/09  00:02:25
+        Log: * This be 0.06.
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  9242] By: autrijus                              on 2003/12/09  00:01:32
+        Log: * patch from Ryan Briones to fix the case where
+             $args{name} is undefined.
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  8456] By: autrijus                              on 2003/10/17  11:01:55
+        Log: * add signature to makefile.pl
+	   ! Makefile.PL
+____________________________________________________________________________
+[  8350] By: autrijus                              on 2003/10/06  17:22:45
+        Log: * ekolve points out we are printing to a closed
+             filehandle META accidentally.
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  7541] By: autrijus                              on 2003/08/14  15:58:33
+        Log: * This be 0.05.
+             * Patch from Germain Garand: run MY->fixin for script/*
+             so different #! paths in script/ won't hurt each other
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  7355] By: autrijus                              on 2003/08/06  08:32:56
+        Log: * 0.04.
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  7340] By: autrijus                              on 2003/08/05  00:42:54
+        Log: * implements auto-appending -$suffix, so this is a valid
+	       $dist:
+             http://example.com/Foo-Bar-0.01
+             * implements cpan://AUTHOR/distname, so this is a valid
+	       $dist:
+             cpan://AUTRIJUS/PAR-0.73
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  7150] By: autrijus                              on 2003/07/27  08:00:27
+        Log: * no longer needs to guess version.
+	   ! MANIFEST
+____________________________________________________________________________
+[  7149] By: autrijus                              on 2003/07/27  07:57:11
+        Log: * This be 0.03.
+             * blib_to_par() was not correctly chdir'ing back to
+	       original cwd.
+             * blib_to_par($path) did not work; it was erroneously
+	       parsed as $dist.
+	   ! Makefile.PL lib/PAR/Dist.pm
+____________________________________________________________________________
+[  7045] By: autrijus                              on 2003/07/19  01:40:46
+        Log: * fix some doc errors
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  6987] By: autrijus                              on 2003/07/16  06:14:55
+        Log: * This be PAR::Dist, 0.01.
+	   + MANIFEST Makefile.PL README t/0-signature.t
+	   + t/1-basic.t
+	   ! lib/PAR/Dist.pm
+____________________________________________________________________________
+[  6986] By: autrijus                              on 2003/07/16  03:26:03
+        Log: * Initial check in of PAR-Dist, a module that manipulates
+             PAR distributions.
+	   + lib/PAR/Dist.pm
