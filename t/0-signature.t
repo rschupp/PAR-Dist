@@ -12,7 +12,7 @@ elsif (!eval { require Socket; Socket::inet_aton('pgp.mit.edu') }) {
     print "ok 1 # skip - Cannot connect to the keyserver\n";
 }
 elsif (!eval { require Module::Signature; 1 }) {
-    warn "# Next time around, consider install Module::Signature,\n".
+    warn "# Next time around, consider installing Module::Signature,\n".
 	 "# so you can verify the integrity of this distribution.\n";
     print "ok 1 # skip - Module::Signature not installed\n";
 }
