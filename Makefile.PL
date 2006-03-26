@@ -5,7 +5,7 @@
 use inc::Module::Install;
 
 name	    ('PAR-Dist');
-author	    ('Autrijus Tang (autrijus@autrijus.org)');
+author	    ('Audrey Tang (autrijus@autrijus.org)');
 abstract    ('Create and manipulate PAR distributions');
 version_from('lib/PAR/Dist.pm');
 license	    ('perl');

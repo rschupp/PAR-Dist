@@ -1,10 +1,12 @@
-name: PAR-Dist
-version: 0.07
+
 abstract: Create and manipulate PAR distributions
-author: Autrijus Tang (autrijus@autrijus.org)
-license: perl
+author: Audrey Tang (autrijus@autrijus.org)
 distribution_type: module
-no_index:
-  directory:
+generated_by: Module::Install version 0.56
+license: perl
+name: PAR-Dist
+no_index: 
+  directory: 
     - inc
-generated_by: Module::Install version 0.31
+    - t
+version: 0.08

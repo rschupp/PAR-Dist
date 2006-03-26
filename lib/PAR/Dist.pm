@@ -5,7 +5,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.07';
+$VERSION    = '0.08';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/ blib_to_par install_par uninstall_par sign_par verify_par /;
 
@@ -18,7 +18,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.07 of PAR::Dist, released January 1, 2004.
+This document describes version 0.08 of PAR::Dist, released February 13, 2006.
 
 =head1 SYNOPSIS
 
@@ -38,7 +38,7 @@ In programs:
 
     install_par("http://foo.com/DBI-1.37-MSWin32-5.8.0.par"); # works too
     install_par("http://foo.com/DBI-1.37"); # auto-appends archname + perlver
-    install_par("cpan://AUTRIJUS/PAR-0.73"); # uses CPAN author directory
+    install_par("cpan://SMUELLER/PAR-0.91"); # uses CPAN author directory
 
 =head1 DESCRIPTION
 
@@ -83,12 +83,39 @@ will be appended to it.
 
 =head2 blib_to_par
 
-Builds a PAR distribution from the F<blib/> subdirectory under C<$path>, or
+Takes key/value pairs as parameters or a single parameter indicating the
+path that contains the F<blib/> subdirectory.
+
+Builds a PAR distribution from the F<blib/> subdirectory under C<path>, or
 under the current directory if unspecified.  If F<blib/> does not exist,
 it automatically runs F<Build>, F<make>, F<Build.PL> or F<Makefile.PL> to
 create it.
 
 Returns the filename or the generated PAR distribution.
+
+Valid parameters are:
+
+=over 2
+
+=item path
+
+Sets the path which contains the F<blib/> subdirectory from which the PAR
+distribution will be generated.
+
+=item name, version, suffix
+
+These attributes set the name, version platform specific suffix
+of the distribution. Name and version can be automatically
+determined from the distributions F<META.yml> or F<Makefile.PL> files.
+
+The suffix is generated from your architecture name and your version of
+perl by default.
+
+=item dist
+
+The output filename for the PAR distribution.
+
+=back
 
 =cut
 
@@ -463,7 +490,7 @@ Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2003, 2004 by Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2003, 2004, 2006 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

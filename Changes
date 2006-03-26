@@ -1,4 +1,10 @@
 ____________________________________________________________________________
+By: smueller on 2006/02/13
+Log:
+    * Updated Module::Install
+    * Slight documentation fixes.
+    * This be 0.08
+____________________________________________________________________________
 [  9539] By: autrijus                              on 2004/01/01  10:23:13
         Log: * This be 0.07.
              * Do not use an identical README as PAR's. ;-)
