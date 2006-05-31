@@ -1,6 +1,3 @@
-# $File: //member/autrijus/PAR-Dist/lib/PAR/Dist.pm $ $Author: autrijus $
-# $Revision: #11 $ $Change: 9530 $ $DateTime: 2004/01/01 05:24:09 $
-
 package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
@@ -18,7 +15,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.08 of PAR::Dist, released February 13, 2006.
+This document describes version 0.09 of PAR::Dist, released May 20, 2006.
 
 =head1 SYNOPSIS
 
