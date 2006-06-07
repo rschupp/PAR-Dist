@@ -1,4 +1,12 @@
 ____________________________________________________________________________
+By: smueller on 2006/07/05
+Log:
+    * .par distributions fetched from URLs will now be installed as
+      distributions named "Module-Name" instead of
+      "http://foo.bar/path/Module-Name-0.01-architecture-version.par".
+    * Updated Module::Install to 0.63
+    * This be 0.10
+____________________________________________________________________________
 By: smueller on 2006/05/20
 Log:
     * Updated Module::Install to 0.62
