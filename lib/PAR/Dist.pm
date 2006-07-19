@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.10';
+$VERSION    = '0.11';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/ blib_to_par install_par uninstall_par sign_par verify_par /;
 
@@ -15,7 +15,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.10 of PAR::Dist, released Jun 07, 2006.
+This document describes version 0.11 of PAR::Dist, released Jun 07, 2006.
 
 =head1 SYNOPSIS
 
@@ -168,6 +168,12 @@ sub blib_to_par {
 		$name ||= $1;
 		$name =~ s/::/-/g;
 	    }
+	    elsif (/^version:\s+.*Module::Build::Version/) {
+                while (<OLD_META>) {
+                    /^\s+original:\s+(.*)/ or next;
+                    $version ||= $1; last;
+                }
+            }
 	    elsif (/^version:\s+(.*)/) {
 		$version ||= $1;
 	    }

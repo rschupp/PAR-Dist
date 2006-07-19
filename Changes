@@ -1,4 +1,12 @@
 ____________________________________________________________________________
+By: audreyt on 2006/07/19
+Log:
+    * The "version" field of META.yml files written by Module::Build
+      was not parsed correctly by the ad-hoc YAML parser.
+      Reported by: Jesse Vincent
+    * Remove the 0-signature.t.
+    * This be 0.11
+____________________________________________________________________________
 By: smueller on 2006/07/05
 Log:
     * .par distributions fetched from URLs will now be installed as
