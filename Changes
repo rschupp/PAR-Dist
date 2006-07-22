@@ -1,10 +1,24 @@
+
 ____________________________________________________________________________
-By: audreyt on 2006/07/19
+By: smueller on 2006/07/22
 Log:
-    * The "version" field of META.yml files written by Module::Build
-      was not parsed correctly by the ad-hoc YAML parser.
-      Reported by: Jesse Vincent
-    * Remove the 0-signature.t.
+    * Module::Install didn't regenerate META.yml because author bit
+      wasn't set.
+    * This is 0.13. (Sorry again, need to do this to make CPAN.pm happy.)
+____________________________________________________________________________
+By: smueller on 2006/07/21
+Log:
+    * Found a couple of path-related bugs in the new functions of 0.11.
+    * This be 0.12. Sorry!
+____________________________________________________________________________
+By: smueller on 2006/07/21
+Log:
+    * Fixed potential bugs where slashes were used as path separators.
+      Now using File::Spec everywhere (I think).
+    * Added merge_par() which merges two or more .par archives.
+    * Added remove_man() which removes all man pages and html docs from
+      a .par archive.
+    * Fixed a bit of indentation. (I know. Don't do it.)
     * This be 0.11
 ____________________________________________________________________________
 By: smueller on 2006/07/05

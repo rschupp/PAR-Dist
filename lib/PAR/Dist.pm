@@ -2,11 +2,20 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.11';
+$VERSION    = '0.13';
 @ISA	    = 'Exporter';
-@EXPORT	    = qw/ blib_to_par install_par uninstall_par sign_par verify_par /;
+@EXPORT	    = qw/
+  blib_to_par
+  install_par
+  uninstall_par
+  sign_par
+  verify_par
+  merge_par
+  remove_man
+/;
 
 use strict;
+use Carp qw/croak/;
 use File::Spec;
 
 =head1 NAME
@@ -15,7 +24,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.11 of PAR::Dist, released Jun 07, 2006.
+This document describes version 0.11 of PAR::Dist, released Jul 21, 2006.
 
 =head1 SYNOPSIS
 
@@ -130,20 +139,20 @@ sub blib_to_par {
     my $cwd;
 
     if (defined $path) {
-	require Cwd;
-	$cwd = Cwd::cwd();
-	chdir $path;
+        require Cwd;
+        $cwd = Cwd::cwd();
+        chdir $path;
     }
 
     _build_blib() unless -d "blib";
 
     my @files;
-    open MANIFEST, ">blib/MANIFEST" or die $!;
-    open META, ">blib/META.yml" or die $!;
+    open MANIFEST, ">", File::Spec->catfile("blib", "MANIFEST") or die $!;
+    open META, ">", File::Spec->catfile("blib", "META.yml") or die $!;
     
     require File::Find;
     File::Find::find( sub {
-	next unless $File::Find::name;
+        next unless $File::Find::name;
         (-r && !-d) and push ( @files, substr($File::Find::name, 5) );
     } , 'blib' );
 
@@ -164,32 +173,26 @@ sub blib_to_par {
                 print META $_;
             }
 
-	    if (/^name:\s+(.*)/) {
-		$name ||= $1;
-		$name =~ s/::/-/g;
-	    }
-	    elsif (/^version:\s+.*Module::Build::Version/) {
-                while (<OLD_META>) {
-                    /^\s+original:\s+(.*)/ or next;
-                    $version ||= $1; last;
-                }
+            if (/^name:\s+(.*)/) {
+                $name ||= $1;
+                $name =~ s/::/-/g;
             }
-	    elsif (/^version:\s+(.*)/) {
-		$version ||= $1;
-	    }
+            elsif (/^version:\s+(.*)/) {
+                $version ||= $1;
+            }
         }
         close OLD_META;
-	close META;
+        close META;
     }
     elsif ((!$name or !$version) and open(MAKEFILE, "Makefile")) {
-	while (<MAKEFILE>) {
-	    if (/^DISTNAME\s+=\s+(.*)$/) {
-		$name ||= $1;
-	    }
-	    elsif (/^VERSION\s+=\s+(.*)$/) {
-		$version ||= $1;
-	    }
-	}
+        while (<MAKEFILE>) {
+            if (/^DISTNAME\s+=\s+(.*)$/) {
+                $name ||= $1;
+            }
+            elsif (/^VERSION\s+=\s+(.*)$/) {
+                $version ||= $1;
+            }
+        }
     }
 
     my $file = "$name-$version-$suffix";
@@ -213,8 +216,8 @@ YAML
     _zip(dist => File::Spec->catfile(File::Spec->updir, $file)) or die $!;
     chdir(File::Spec->updir);
 
-    unlink "blib/MANIFEST";
-    unlink "blib/META.yml";
+    unlink File::Spec->catfile("blib", "MANIFEST");
+    unlink File::Spec->catfile("blib", "META.yml");
 
     $dist ||= File::Spec->catfile($cwd, $file) if $cwd;
 
@@ -286,7 +289,7 @@ sub _install_or_uninstall {
     my ($dist, $tmpdir) = _unzip_to_tmpdir( dist => $args{dist}, subdir => 'blib' );
 
     if (!$name) {
-	open (META, 'blib/META.yml') or return;
+	open (META, File::Spec->catfile('blib', 'META.yml')) or return;
 	while (<META>) {
 	    next unless /^name:\s+(.*)/;
 	    $name = $1; last;
@@ -348,6 +351,183 @@ sub verify_par {
     $! = _verify_or_sign(%args, action => 'verify');
     return ( $! == Module::Signature::SIGNATURE_OK() );
 }
+
+=head2 merge_par
+
+Merge two or more PAR distributions into one. First argument must
+be the name of the distribution you want to merge all others into.
+Any following arguments will be interpreted as the file names of
+further PAR distributions to merge into the first one.
+
+  merge_par('foo.par', 'bar.par', 'baz.par')
+
+This will merge the distributions C<foo.par>, C<bar.par> and C<baz.par>
+into the distribution C<foo.par>. C<foo.par> will be overwritten!
+The original META.yml of C<foo.par> is retained.
+
+=cut
+
+sub merge_par {
+    my $base_par = shift;
+    my @additional_pars = @_;
+    require Cwd;
+    require File::Copy;
+    require File::Path;
+    require File::Find;
+
+    # parameter checking
+    if (not defined $base_par) {
+        croak "First argument to merge_par() must be the .par archive to modify.";
+    }
+
+    if (not -f $base_par or not -r _ or not -w _) {
+        croak "'$base_par' is not a file or you do not have enough permissions to read and modify it.";
+    }
+    
+    foreach (@additional_pars) {
+        if (not -f $_ or not -r _) {
+            croak "'$_' is not a file or you do not have enough permissions to read it.";
+        }
+    }
+
+    # The unzipping will change directories. Remember old dir.
+    my $old_cwd = Cwd::cwd();
+    
+    # Unzip the base par to a temp. dir.
+    (undef, my $base_dir) = _unzip_to_tmpdir(
+        dist => $base_par, subdir => 'blib'
+    );
+    my $blibdir = File::Spec->catdir($base_dir, 'blib');
+
+    # move the META.yml to the (main) temp. dir.
+    File::Copy::move(
+        File::Spec->catfile($blibdir, 'META.yml'),
+        File::Spec->catfile($base_dir, 'META.yml')
+    );
+    # delete (incorrect) MANIFEST
+    unlink File::Spec->catfile($blibdir, 'MANIFEST');
+
+    # extract additional pars and merge    
+    foreach my $par (@additional_pars) {
+        (undef, my $add_dir) = _unzip_to_tmpdir(
+			#dist => File::Spec->catfile($old_cwd, $par)
+            dist => $par
+        );
+        my @files;
+        my @dirs;
+        # I hate File::Find
+        # And I hate writing portable code, too.
+        File::Find::find(
+            {wanted =>sub {
+                my $file = $File::Find::name;
+                push @files, $file if -f $file;
+                push @dirs, $file if -d $file;
+            }},
+            $add_dir
+        );
+        my ($vol, $subdir, undef) = File::Spec->splitpath( $add_dir, 1);
+        my @dir = File::Spec->splitdir( $subdir );
+    
+        # merge directory structure
+        foreach my $dir (@dirs) {
+            my ($v, $d, undef) = File::Spec->splitpath( $dir, 1 );
+            my @d = File::Spec->splitdir( $d );
+            shift @d foreach @dir; # remove tmp dir from path
+            my $target = File::Spec->catdir( $blibdir, @d );
+            mkdir($target);
+        }
+
+        # merge files
+        foreach my $file (@files) {
+            my ($v, $d, $f) = File::Spec->splitpath( $file );
+            my @d = File::Spec->splitdir( $d );
+            shift @d foreach @dir; # remove tmp dir from path
+            my $target = File::Spec->catfile(
+                File::Spec->catdir( $blibdir, @d ),
+                $f
+            );
+            File::Copy::copy($file, $target)
+              or die "Could not copy '$file' to '$target': $!";
+            
+        }
+        chdir($old_cwd);
+        File::Path::rmtree([$add_dir]);
+    }
+    
+    # delete (copied) MANIFEST and META.yml
+    unlink File::Spec->catfile($blibdir, 'MANIFEST');
+    unlink File::Spec->catfile($blibdir, 'META.yml');
+    
+    chdir($base_dir);
+    my $resulting_par_file = Cwd::abs_path(blib_to_par());
+    chdir($old_cwd);
+    File::Copy::move($resulting_par_file, $base_par);
+    
+    File::Path::rmtree([$base_dir]);
+}
+
+
+=head2 remove_man
+
+Remove the man pages from a PAR distribution. First argument must
+be the name (and path) of the PAR distribution file. It will be
+extracted, stripped of all C<man\d?> and C<html> subdirectories
+and then repackaged into the original file.
+
+=cut
+
+sub remove_man {
+    my $par = shift;
+    require Cwd;
+    require File::Copy;
+    require File::Path;
+    require File::Find;
+
+    # parameter checking
+    if (not defined $par) {
+        croak "First argument to remove_man() must be the .par archive to modify.";
+    }
+
+    if (not -f $par or not -r _ or not -w _) {
+        croak "'$par' is not a file or you do not have enough permissions to read and modify it.";
+    }
+    
+    # The unzipping will change directories. Remember old dir.
+    my $old_cwd = Cwd::cwd();
+    
+    # Unzip the base par to a temp. dir.
+    (undef, my $base_dir) = _unzip_to_tmpdir(
+        dist => $par, subdir => 'blib'
+    );
+    my $blibdir = File::Spec->catdir($base_dir, 'blib');
+
+    # move the META.yml to the (main) temp. dir.
+    File::Copy::move(
+        File::Spec->catfile($blibdir, 'META.yml'),
+        File::Spec->catfile($base_dir, 'META.yml')
+    );
+    # delete (incorrect) MANIFEST
+    unlink File::Spec->catfile($blibdir, 'MANIFEST');
+
+    opendir DIRECTORY, 'blib' or die $!;
+    my @dirs = grep { /^blib\/(?:man\d*|html)$/ }
+               grep { -d $_ }
+               map  { File::Spec->catfile('blib', $_) }
+               readdir DIRECTORY;
+    close DIRECTORY;
+    
+    File::Path::rmtree(\@dirs);
+    
+    chdir($base_dir);
+    my $resulting_par_file = Cwd::abs_path(blib_to_par());
+    chdir($old_cwd);
+    File::Copy::move($resulting_par_file, $par);
+    
+    File::Path::rmtree([$base_dir]);
+}
+
+
+
 
 sub _unzip {
     my %args = &_args;
