@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.13';
+$VERSION    = '0.14';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -65,7 +65,8 @@ C<i386-freebsd>.
 
 =head1 FUNCTIONS
 
-Five functions are exported by default.  They can take either a hash of
+Seven functions are exported by default.  Unless otherwise noted,
+they can take either a hash of
 named arguments, a single argument (taken as C<$path> by C<blib_to_par>
 and C<$dist> by other functions), or no arguments (in which case
 the first PAR file in the current directory is used).
@@ -263,6 +264,26 @@ sub _build_blib {
 Installs a PAR distribution into the system, using
 C<ExtUtils::Install::install_default>.
 
+Valid parameters are:
+
+=over 2
+
+=item dist
+
+The .par file to install. The heuristics outlined in the B<FUNCTIONS>
+section above apply.
+
+=item prefix
+
+This string will be prepended to all installation paths.
+If it isn't specified, the environment variable
+C<PERL_INSTALL_ROOT> is used as a prefix.
+
+=back
+
+If only a single parameter is given, it is treated as the C<dist>
+parameter.
+
 =cut
 
 sub install_par {
@@ -275,6 +296,8 @@ sub install_par {
 Uninstalls all previously installed contents of a PAR distribution,
 using C<ExtUtils::Install::uninstall>.
 
+Takes the same parameters as C<install_par>.
+
 =cut
 
 sub uninstall_par {
@@ -286,24 +309,28 @@ sub _install_or_uninstall {
     my %args = &_args;
     my $name = $args{name};
     my $action = $args{action};
+
+    my %ENV_copy = %ENV;
+    $ENV{PERL_INSTALL_ROOT} = $args{prefix} if defined $args{prefix};
+
     my ($dist, $tmpdir) = _unzip_to_tmpdir( dist => $args{dist}, subdir => 'blib' );
 
     if (!$name) {
-	open (META, File::Spec->catfile('blib', 'META.yml')) or return;
-	while (<META>) {
-	    next unless /^name:\s+(.*)/;
-	    $name = $1; last;
-	}
-	close META;
+        open (META, File::Spec->catfile('blib', 'META.yml')) or return;
+        while (<META>) {
+            next unless /^name:\s+(.*)/;
+            $name = $1; last;
+        }
+        close META;
     }
 
     if (-d 'script') {
-	require ExtUtils::MY;
-	foreach my $file (glob("script/*")) {
-	    next unless -T $file;
-	    ExtUtils::MY->fixin($file);
-	    chmod(0555, $file);
-	}
+        require ExtUtils::MY;
+        foreach my $file (glob("script/*")) {
+            next unless -T $file;
+            ExtUtils::MY->fixin($file);
+            chmod(0555, $file);
+        }
     }
 
     $name =~ s{::|-}{/}g;
@@ -311,14 +338,16 @@ sub _install_or_uninstall {
 
     my $rv;
     if ($action eq 'install') {
-	$rv = ExtUtils::Install::install_default($name);
+        $rv = ExtUtils::Install::install_default($name);
     }
     elsif ($action eq 'uninstall') {
-	require Config;
-	$rv = ExtUtils::Install::uninstall(
-	    "$Config::Config{installsitearch}/auto/$name/.packlist"
-	);
+        require Config;
+        $rv = ExtUtils::Install::uninstall(
+            "$Config::Config{installsitearch}/auto/$name/.packlist"
+        );
     }
+
+    %ENV = %ENV_copy;
 
     File::Path::rmtree([$tmpdir]);
     return $rv;
@@ -669,13 +698,16 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 =head1 AUTHORS
 
-Audrey Tang E<lt>cpan@audreyt.orgE<gt>
+Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2005
+
+Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2006
 
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
 and participate in the discussion.
 
 Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
+
 
 =head1 COPYRIGHT
 

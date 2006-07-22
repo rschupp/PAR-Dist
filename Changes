@@ -2,6 +2,11 @@
 ____________________________________________________________________________
 By: smueller on 2006/07/22
 Log:
+    * Added rudimentary support for installing to a prefix-ed location.
+	* Documented the new parameter "prefix" to install_par();
+____________________________________________________________________________
+By: smueller on 2006/07/22
+Log:
     * Module::Install didn't regenerate META.yml because author bit
       wasn't set.
     * This is 0.13. (Sorry again, need to do this to make CPAN.pm happy.)
