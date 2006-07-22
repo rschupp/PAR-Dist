@@ -24,7 +24,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.11 of PAR::Dist, released Jul 21, 2006.
+This document describes version 0.14 of PAR::Dist, released Jul 22, 2006.
 
 =head1 SYNOPSIS
 
@@ -177,6 +177,12 @@ sub blib_to_par {
             if (/^name:\s+(.*)/) {
                 $name ||= $1;
                 $name =~ s/::/-/g;
+            }
+            elsif (/^version:\s+.*Module::Build::Version/) {
+                while (<OLD_META>) {
+                    /^\s+original:\s+(.*)/ or next;
+                    $version ||= $1; last;
+                }
             }
             elsif (/^version:\s+(.*)/) {
                 $version ||= $1;
