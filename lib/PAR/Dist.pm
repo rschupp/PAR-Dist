@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.14';
+$VERSION    = '0.15';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -12,6 +12,7 @@ $VERSION    = '0.14';
   verify_par
   merge_par
   remove_man
+  get_meta
 /;
 
 use strict;
@@ -24,7 +25,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.14 of PAR::Dist, released Jul 22, 2006.
+This document describes version 0.15 of PAR::Dist, released Jul 25, 2006.
 
 =head1 SYNOPSIS
 
@@ -65,7 +66,7 @@ C<i386-freebsd>.
 
 =head1 FUNCTIONS
 
-Seven functions are exported by default.  Unless otherwise noted,
+Several functions are exported by default.  Unless otherwise noted,
 they can take either a hash of
 named arguments, a single argument (taken as C<$path> by C<blib_to_par>
 and C<$dist> by other functions), or no arguments (in which case
@@ -250,18 +251,18 @@ Its contents are accessible in compliant browsers as:
 
 sub _build_blib {
     if (-e 'Build') {
-	system($^X, "Build");
+        system($^X, "Build");
     }
     elsif (-e 'Makefile') {
-	system($Config::Config{make});
+        system($Config::Config{make});
     }
     elsif (-e 'Build.PL') {
-	system($^X, "Build.PL");
-	system($^X, "Build");
+        system($^X, "Build.PL");
+        system($^X, "Build");
     }
     elsif (-e 'Makefile.PL') {
-	system($^X, "Makefile.PL");
-	system($Config::Config{make});
+        system($^X, "Makefile.PL");
+        system($Config::Config{make});
     }
 }
 
@@ -445,7 +446,6 @@ sub merge_par {
     # extract additional pars and merge    
     foreach my $par (@additional_pars) {
         (undef, my $add_dir) = _unzip_to_tmpdir(
-			#dist => File::Spec->catfile($old_cwd, $par)
             dist => $par
         );
         my @files;
@@ -504,15 +504,20 @@ sub merge_par {
 
 =head2 remove_man
 
-Remove the man pages from a PAR distribution. First argument must
-be the name (and path) of the PAR distribution file. It will be
+Remove the man pages from a PAR distribution. Takes one named
+parameter: I<dist> which should be the name (and path) of the
+PAR distribution file. The calling conventions outlined in
+the C<FUNCTIONS> section above apply.
+
+The PAR archive will be
 extracted, stripped of all C<man\d?> and C<html> subdirectories
 and then repackaged into the original file.
 
 =cut
 
 sub remove_man {
-    my $par = shift;
+    my %args = &_args;
+    my $par = $args{dist};
     require Cwd;
     require File::Copy;
     require File::Path;
@@ -562,6 +567,56 @@ sub remove_man {
 }
 
 
+=head2 get_meta
+
+Opens a PAR archive and extracts the contained META.yml file.
+Returns the META.yml file as a string.
+
+Takes one named parameter: I<dist>. If only one parameter is
+passed, it is treated as the I<dist> parameter. (Have a look
+at the description in the C<FUNCTIONS> section above.)
+
+Returns undef if no PAR archive or no META.yml within the
+archive were found.
+
+=cut
+
+sub get_meta {
+    my %args = &_args;
+    my $dist = $args{dist};
+    return undef if not defined $dist or not -r $dist;
+    require Cwd;
+    require File::Path;
+
+    # The unzipping will change directories. Remember old dir.
+    my $old_cwd = Cwd::cwd();
+    
+    # Unzip the base par to a temp. dir.
+    (undef, my $base_dir) = _unzip_to_tmpdir(
+        dist => $dist, subdir => 'blib'
+    );
+    my $blibdir = File::Spec->catdir($base_dir, 'blib');
+
+    my $meta = File::Spec->catfile($blibdir, 'META.yml');
+
+    if (not -r $meta) {
+        return undef;
+    }
+    
+    open my $fh, '<', $meta
+      or die "Could not open file '$meta' for reading: $!";
+    
+    local $/ = undef;
+    my $meta_text = <$fh>;
+    close $fh;
+    
+    chdir($old_cwd);
+    
+    File::Path::rmtree([$base_dir]);
+    
+    return $meta_text;
+}
+
 
 
 sub _unzip {
@@ -572,7 +627,8 @@ sub _unzip {
 
     if (eval { require Archive::Zip; 1 }) {
         my $zip = Archive::Zip->new;
-	$SIG{__WARN__} = sub { print STDERR $_[0] unless $_[0] =~ /\bstat\b/ };
+        local %SIG;
+        $SIG{__WARN__} = sub { print STDERR $_[0] unless $_[0] =~ /\bstat\b/ };
         return unless $zip->read($dist) == Archive::Zip::AZ_OK()
                   and $zip->extractTree('', "$path/") == Archive::Zip::AZ_OK();
     }
@@ -608,12 +664,12 @@ sub _args {
         $args{name} =~ s/^([0-9A-Za-z_-]+)-\d+\..+$/$1/;
     }
     $args{dist} .= '-' . do {
-	require Config;
-	$args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par"
+        require Config;
+        $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par"
     } unless !$args{dist} or $args{dist} =~ /\.[a-zA-Z_][^.]*$/;
 
     $args{dist} = _fetch(dist => $args{dist})
-	if ($args{dist} and $args{dist} =~ m!^\w+://!);
+      if ($args{dist} and $args{dist} =~ m!^\w+://!);
     return %args;
 }
 
@@ -635,7 +691,7 @@ sub _fetch {
     my $rc = LWP::Simple::mirror( $args{dist}, $file );
 
     if (!LWP::Simple::is_success($rc)) {
-	die "Error $rc: ", LWP::Simple::status_message($rc), " ($args{dist})\n";
+        die "Error $rc: ", LWP::Simple::status_message($rc), " ($args{dist})\n";
     }
 
     return $file if -e $file;
@@ -648,7 +704,7 @@ sub _verify_or_sign {
     require File::Path;
     require Module::Signature;
     die "Module::Signature version 0.25 required"
-	unless Module::Signature->VERSION >= 0.25;
+      unless Module::Signature->VERSION >= 0.25;
 
     require Cwd;
     my $cwd = Cwd::cwd();
@@ -657,20 +713,20 @@ sub _verify_or_sign {
     $action ||= (-e 'SIGNATURE' ? 'verify' : 'sign');
 
     if ($action eq 'sign') {
-	open FH, '>SIGNATURE' unless -e 'SIGNATURE';
-	open FH, 'MANIFEST' or die $!;
+        open FH, '>SIGNATURE' unless -e 'SIGNATURE';
+        open FH, 'MANIFEST' or die $!;
 
-	local $/;
-	my $out = <FH>;
-	if ($out !~ /^SIGNATURE(?:\s|$)/m) {
-	    $out =~ s/^(?!\s)/SIGNATURE\n/m;
-	    open FH, '>MANIFEST' or die $!;
-	    print FH $out;
-	}
-	close FH;
+        local $/;
+        my $out = <FH>;
+        if ($out !~ /^SIGNATURE(?:\s|$)/m) {
+            $out =~ s/^(?!\s)/SIGNATURE\n/m;
+            open FH, '>MANIFEST' or die $!;
+            print FH $out;
+        }
+        close FH;
 
-	$args{overwrite}	= 1 unless exists $args{overwrite};
-	$args{skip}		= 0 unless exists $args{skip};
+        $args{overwrite} = 1 unless exists $args{overwrite};
+        $args{skip}      = 0 unless exists $args{skip};
     }
 
     my $rv = Module::Signature->can($action)->(%args);
@@ -704,7 +760,7 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 =head1 AUTHORS
 
-Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2005
+Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2006
 
 Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2006
 
@@ -713,7 +769,6 @@ send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
 and participate in the discussion.
 
 Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
-
 
 =head1 COPYRIGHT
 
