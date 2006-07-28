@@ -3,6 +3,7 @@ By: smueller on 2006/07/28
 Log:
     * PAR::Dist would previously generate bad file names and META.yml if
       the newlines contained Windows' \r. That's history.
+    * This is 0.15.
 ____________________________________________________________________________
 By: smueller on 2006/07/25
 Log:
