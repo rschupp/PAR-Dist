@@ -182,7 +182,8 @@ sub blib_to_par {
             elsif (/^version:\s+.*Module::Build::Version/) {
                 while (<OLD_META>) {
                     /^\s+original:\s+(.*)/ or next;
-                    $version ||= $1; last;
+                    $version ||= $1;
+                    last;
                 }
             }
             elsif (/^version:\s+(.*)/) {
@@ -202,6 +203,9 @@ sub blib_to_par {
             }
         }
     }
+
+    $name =~ s/\s+$//;
+    $version =~ s/\s+$//;
 
     my $file = "$name-$version-$suffix";
     unlink $file if -f $file;

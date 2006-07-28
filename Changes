@@ -1,3 +1,9 @@
+
+By: smueller on 2006/07/28
+Log:
+    * PAR::Dist would previously generate bad file names and META.yml if
+      the newlines contained Windows' \r. That's history.
+____________________________________________________________________________
 By: smueller on 2006/07/25
 Log:
     * Changed the calling conventions of remove_man to better resemble
