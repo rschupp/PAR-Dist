@@ -1,4 +1,13 @@
 
+By: smueller on 2006/08/02
+Log:
+    * Added the parse_dist_name routine which was previously shipped with
+      both PAR::Repository and PAR::Repository::Client.
+    * Changed the distribution name detection heuristics to favour the
+      distribution name determined from META.yml and then those from
+      parse_dist_name.
+    * Version bump to 0.16.
+____________________________________________________________________________
 By: smueller on 2006/07/28
 Log:
     * PAR::Dist would previously generate bad file names and META.yml if

@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.15';
+$VERSION    = '0.16';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -112,7 +112,7 @@ distribution will be generated.
 
 =item name, version, suffix
 
-These attributes set the name, version platform specific suffix
+These attributes set the name, version and platform specific suffix
 of the distribution. Name and version can be automatically
 determined from the distributions F<META.yml> or F<Makefile.PL> files.
 
@@ -326,14 +326,16 @@ sub _install_or_uninstall {
 
     my ($dist, $tmpdir) = _unzip_to_tmpdir( dist => $args{dist}, subdir => 'blib' );
 
-    if (!$name) {
-        open (META, File::Spec->catfile('blib', 'META.yml')) or return;
+    if ( open (META, File::Spec->catfile('blib', 'META.yml')) ) {
         while (<META>) {
             next unless /^name:\s+(.*)/;
-            $name = $1; last;
+            $name = $1;
+            $name =~ s/\s+$//;
+            last;
         }
         close META;
     }
+    return if not defined $name or $name eq '';
 
     if (-d 'script') {
         require ExtUtils::MY;
@@ -663,9 +665,17 @@ sub _args {
     $args{name} ||= $args{dist};
     # If we are installing from an URL, we want to munge the
     # distribution name so that it is in form "Module-Name"
-    if ($args{name} and $args{name} =~ m!^\w+://!) {
-        $args{name} =~ s/^.*\/([^\/]+)$/$1/;
-        $args{name} =~ s/^([0-9A-Za-z_-]+)-\d+\..+$/$1/;
+    if ($args{name}) {
+        $args{name} =~ s/^\w+:\/\///;
+        my @elems = parse_dist_name($args{name});
+        # @elems is name, version, arch, perlversion
+        if (defined $elems[0]) {
+            $args{name} = $elems[0];
+        }
+        else {
+            $args{name} =~ s/^.*\/([^\/]+)$/$1/;
+            $args{name} =~ s/^([0-9A-Za-z_-]+)-\d+\..+$/$1/;
+        }
     }
     $args{dist} .= '-' . do {
         require Config;
@@ -676,6 +686,7 @@ sub _args {
       if ($args{dist} and $args{dist} =~ m!^\w+://!);
     return %args;
 }
+
 
 my %escapes;
 sub _fetch {
@@ -754,6 +765,70 @@ sub _unzip_to_tmpdir {
 
     chdir $tmpdir;
     return ($dist, $tmpdir);
+}
+
+
+
+=head2 parse_dist_name
+
+First argument must be a distribution file name. The file name
+is parsed into I<distribution name>, I<distribution version>,
+I<architecture name>, and I<perl version>.
+
+Returns the results as a list in the above order.
+If any or all of the above cannot be determined, returns undef instead
+of the undetermined elements.
+
+Supported formats are:
+
+Math-Symbolic-0.502-x86_64-linux-gnu-thread-multi-5.8.7
+
+Math-Symbolic-0.502
+
+The ".tar.gz" or ".par" extensions as well as any
+preceding paths are stripped before parsing.
+
+=cut
+
+sub parse_dist_name {
+	my $file = shift;
+	return(undef, undef, undef, undef) if not defined $file;
+
+	(undef, undef, $file) = File::Spec->splitpath($file);
+	
+	my $version = qr/\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+/;
+	$file =~ s/\.(?:par|tar\.gz|tar)$//;
+	my @elem = split /-/, $file;
+	my (@dn, $dv, @arch, $pv);
+	while (@elem) {
+		my $e = shift @elem;
+		if ($e =~ /^$version$/) {
+			$dv = $e;
+			last;
+		}
+		push @dn, $e;
+	}
+	
+	my $dn;
+	$dn = join('-', @dn) if @dn;
+
+	if (not @elem) {
+		return( $dn, $dv, undef, undef);
+	}
+
+	while (@elem) {
+		my $e = shift @elem;
+		if ($e =~ /^$version|any_version$/) {
+			$pv = $e;
+			last;
+		}
+		push @arch, $e;
+	}
+
+	my $arch;
+	$arch = join('-', @arch) if @arch;
+
+	return($dn, $dv, $arch, $pv);
 }
 
 1;
