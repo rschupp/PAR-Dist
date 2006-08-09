@@ -1,4 +1,9 @@
 
+By: smueller on 2006/08/09
+Log:
+    * Fixed tests for parse_dist_name.
+    * Release 0.15_02
+____________________________________________________________________________
 By: smueller on 2006/08/02
 Log:
     * Added the parse_dist_name routine which was previously shipped with
@@ -6,7 +11,7 @@ Log:
     * Changed the distribution name detection heuristics to favour the
       distribution name determined from META.yml and then those from
       parse_dist_name.
-    * Version bump to 0.16.
+    * Version bump to 0.15_01.
 ____________________________________________________________________________
 By: smueller on 2006/07/28
 Log:
