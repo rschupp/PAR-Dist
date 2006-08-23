@@ -1,4 +1,9 @@
 
+By: smueller on 2006/08/23
+Log:
+    * Fixed merge_par for relative paths.
+    * This is PAR::Dist 0.17.
+____________________________________________________________________________
 By: smueller on 2006/08/09
 Log:
     * Fixed tests for parse_dist_name.

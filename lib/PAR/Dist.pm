@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT/;
 
-$VERSION    = '0.15_02';
+$VERSION    = '0.17';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -25,9 +25,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.15_02 of PAR::Dist, released Aug 8, 2006.
-
-This is a developer release intended for early adopters and testers!
+This document describes version 0.16 of PAR::Dist, released Aug 11, 2006.
 
 =head1 SYNOPSIS
 
@@ -453,6 +451,9 @@ sub merge_par {
 
     # extract additional pars and merge    
     foreach my $par (@additional_pars) {
+        # restore original directory because the par path
+        # might have been relative!
+        chdir($old_cwd);
         (undef, my $add_dir) = _unzip_to_tmpdir(
             dist => $par
         );
