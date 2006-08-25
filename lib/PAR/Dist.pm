@@ -807,12 +807,12 @@ sub parse_dist_name {
 	(undef, undef, $file) = File::Spec->splitpath($file);
 	
 	my $version = qr/\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+/;
-	$file =~ s/\.(?:par|tar\.gz|tar)$//;
+	$file =~ s/\.(?:par|tar\.gz|tar)$//i;
 	my @elem = split /-/, $file;
 	my (@dn, $dv, @arch, $pv);
 	while (@elem) {
 		my $e = shift @elem;
-		if ($e =~ /^$version$/) {
+		if ($e =~ /^$version$/o) {
 			$dv = $e;
 			last;
 		}
@@ -847,6 +847,8 @@ Creates a F<blib/lib> subdirectory in the current directory
 and prepares a F<META.yml> with meta information for a
 new PAR distribution. First argument should be the name of the
 PAR distribution in a format understood by C<parse_dist_name()>.
+Alternatively, named arguments resembling those of
+C<blib_to_par> are accepted.
 
 After running C<generate_blib_stub> and injecting files into
 the F<blib> directory, you can create a PAR distribution
@@ -859,7 +861,7 @@ Example:
   use File::Copy 'copy';
   
   generate_blib_stub(
-    'MyApp-1.00-i686-linux-5.8.8.par'
+    name => 'MyApp', version => '1.00'
   );
   copy('MyApp.pm', 'blib/lib/MyApp.pm');
   blib_to_par(); # generates the .par file!
@@ -871,14 +873,27 @@ C<generate_blib_stub> will not overwrite existing files.
 sub generate_blib_stub {
     my %args = &_args;
     my $dist = $args{dist};
-    return undef if not defined $dist;
+    require Config;
+    
+    my $name	= $args{name};
+    my $version	= $args{version};
+    my $suffix	= $args{suffix};
 
-    my @info = parse_dist_name($dist);
-    if (grep { not defined $_ } @info or @info != 4) {
+    my ($parse_name, $parse_version, $archname, $perlversion)
+      = parse_dist_name($dist);
+    
+    $name ||= $parse_name;
+    $version ||= $parse_version;
+    $suffix = "$archname-$perlversion"
+      if (not defined $suffix or $suffix eq '')
+         and $archname and $perlversion;
+    
+    $suffix ||= "$Config::Config{archname}-$Config::Config{version}";
+    if ( grep { not defined $_ } ($name, $version, $suffix) ) {
         warn "Could not determine distribution meta information from distribution name '$dist'";
-        return undef;
+        return();
     }
-    my ($name, $version, $arch, $perlver) = @info;
+    $suffix =~ s/\.par$//;
 
     if (not -f 'META.yml') {
         open META, '>', 'META.yml'
@@ -888,7 +903,7 @@ name: $name
 version: $version
 build_requires: {}
 conflicts: {}
-dist_name: $name-$version-$arch-$perlver.par
+dist_name: $name-$version-$suffix.par
 distribution_type: par
 dynamic_config: 0
 generated_by: 'PAR::Dist version $PAR::Dist::VERSION'
