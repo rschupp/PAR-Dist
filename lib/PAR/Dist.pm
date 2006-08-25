@@ -1,8 +1,8 @@
 package PAR::Dist;
 require Exporter;
-use vars qw/$VERSION @ISA @EXPORT/;
+use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.17';
+$VERSION    = '0.18';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -13,6 +13,11 @@ $VERSION    = '0.17';
   merge_par
   remove_man
   get_meta
+  generate_blib_stub
+/;
+
+@EXPORT_OK = qw/
+  parse_dist_name
 /;
 
 use strict;
@@ -25,7 +30,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.16 of PAR::Dist, released Aug 11, 2006.
+This document describes version 0.18 of PAR::Dist, released Aug 25, 2006.
 
 =head1 SYNOPSIS
 
@@ -612,12 +617,12 @@ sub get_meta {
         return undef;
     }
     
-    open my $fh, '<', $meta
+    open FH, '<', $meta
       or die "Could not open file '$meta' for reading: $!";
     
     local $/ = undef;
-    my $meta_text = <$fh>;
-    close $fh;
+    my $meta_text = <FH>;
+    close FH;
     
     chdir($old_cwd);
     
@@ -791,6 +796,8 @@ Math-Symbolic-0.502
 The ".tar.gz" or ".par" extensions as well as any
 preceding paths are stripped before parsing.
 
+This function is not exported by default.
+
 =cut
 
 sub parse_dist_name {
@@ -833,6 +840,70 @@ sub parse_dist_name {
 
 	return($dn, $dv, $arch, $pv);
 }
+
+=head2 generate_blib_stub
+
+Creates a F<blib/lib> subdirectory in the current directory
+and prepares a F<META.yml> with meta information for a
+new PAR distribution. First argument should be the name of the
+PAR distribution in a format understood by C<parse_dist_name()>.
+
+After running C<generate_blib_stub> and injecting files into
+the F<blib> directory, you can create a PAR distribution
+using C<blib_to_par>.
+This function is useful for creating custom PAR distributions
+from scratch. (I.e. not from an unpacked CPAN distribution)
+Example:
+
+  use PAR::Dist;
+  use File::Copy 'copy';
+  
+  generate_blib_stub(
+    'MyApp-1.00-i686-linux-5.8.8.par'
+  );
+  copy('MyApp.pm', 'blib/lib/MyApp.pm');
+  blib_to_par(); # generates the .par file!
+
+C<generate_blib_stub> will not overwrite existing files.
+
+=cut
+
+sub generate_blib_stub {
+    my %args = &_args;
+    my $dist = $args{dist};
+    return undef if not defined $dist;
+
+    my @info = parse_dist_name($dist);
+    if (grep { not defined $_ } @info or @info != 4) {
+        warn "Could not determine distribution meta information from distribution name '$dist'";
+        return undef;
+    }
+    my ($name, $version, $arch, $perlver) = @info;
+
+    if (not -f 'META.yml') {
+        open META, '>', 'META.yml'
+          or die "Could not open META.yml file for writing: $!";
+        print META << "YAML" if fileno(META);
+name: $name
+version: $version
+build_requires: {}
+conflicts: {}
+dist_name: $name-$version-$arch-$perlver.par
+distribution_type: par
+dynamic_config: 0
+generated_by: 'PAR::Dist version $PAR::Dist::VERSION'
+license: unknown
+YAML
+        close META;
+    }
+
+    mkdir('blib');
+    mkdir(File::Spec->catdir('blib', 'lib'));
+    mkdir(File::Spec->catdir('blib', 'script'));
+
+    return 1;
+}
+
 
 1;
 

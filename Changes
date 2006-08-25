@@ -1,4 +1,10 @@
 
+By: smueller on 2006/08/25
+Log:
+    * Added the generate_blib_stub method.
+    * Added parse_dist_name to @EXPORT_OK
+    * This is PAR::Dist 0.18.
+____________________________________________________________________________
 By: smueller on 2006/08/23
 Log:
     * Fixed merge_par for relative paths.
