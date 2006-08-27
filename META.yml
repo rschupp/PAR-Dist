@@ -1,7 +1,7 @@
 abstract: Create and manipulate PAR distributions
 author: Audrey Tang (autrijus@autrijus.org)
 distribution_type: module
-generated_by: Module::Install version 0.63
+generated_by: Module::Install version 0.64
 license: perl
 name: PAR-Dist
 no_index: 
@@ -14,4 +14,4 @@ requires:
   File::Path: 0
   File::Spec: 0
   File::Temp: 0
-version: 0.15_02
+version: 0.18
