@@ -1,4 +1,8 @@
 
+By: smueller on 2006/08/28
+Log:
+    * Added optional POD tests.
+____________________________________________________________________________
 By: smueller on 2006/08/25
 Log:
     * Added the generate_blib_stub method.
