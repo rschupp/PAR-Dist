@@ -1,4 +1,10 @@
 
+By: smueller on 2006/09/03
+Log:
+    * It's not possible to specify your own installation paths.
+    * Installation paths now documented.
+    * This is 0.19.
+____________________________________________________________________________
 By: smueller on 2006/08/28
 Log:
     * Added optional POD tests.

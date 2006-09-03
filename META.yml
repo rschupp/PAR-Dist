@@ -14,4 +14,4 @@ requires:
   File::Path: 0
   File::Spec: 0
   File::Temp: 0
-version: 0.18
+version: 0.19

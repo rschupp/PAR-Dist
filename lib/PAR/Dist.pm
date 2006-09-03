@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.18';
+$VERSION    = '0.19';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -297,6 +297,26 @@ C<PERL_INSTALL_ROOT> is used as a prefix.
 
 =back
 
+Additionally, you can use several parameters to change the default
+installation destinations. You don't usually have to worry about this
+unless you are installing into a user-local directory.
+The following section outlines the parameter names and default settings:
+
+  Parameter         From          To
+  inst_lib          blib/lib      $Config{installsitelib} (*)
+  inst_archlib      blib/arch     $Config{installsitearch}
+  inst_script       blib/script   $Config{installscript}
+  inst_bin          blib/bin      $Config{installbin}
+  inst_man1dir      blib/man1     $Config{installman1dir}
+  inst_man3dir      blib/man3     $Config{installman3dir}
+  packlist_read                   $Config{sitearchexp}/auto/$name/.packlist
+  packlist_write                  $Config{installsitearch}/auto/$name/.packlist
+
+The C<packlist_write> parameter is used to control where the F<.packlist>
+file is written to. (Necessary for uninstallation.)
+The C<packlist_read> parameter specifies a .packlist file to merge in if
+it exists.
+
 If only a single parameter is given, it is treated as the C<dist>
 parameter.
 
@@ -312,7 +332,11 @@ sub install_par {
 Uninstalls all previously installed contents of a PAR distribution,
 using C<ExtUtils::Install::uninstall>.
 
-Takes the same parameters as C<install_par>.
+Takes almost the same parameters as C<install_par>, but naturally,
+the installation target parameters do not apply. The only exception
+to this is the C<packlist_read> parameter which specifies the
+F<.packlist> file to read the list of installed files from.
+It defaults to C<$Config::Config{installsitearch}/auto/$name/.packlist>.
 
 =cut
 
@@ -356,12 +380,14 @@ sub _install_or_uninstall {
 
     my $rv;
     if ($action eq 'install') {
-        $rv = ExtUtils::Install::install_default($name);
+        my $target = _installation_target( File::Spec->curdir, $name, \%args );
+        
+        $rv = ExtUtils::Install::install($target, 1, 0, 0);
     }
     elsif ($action eq 'uninstall') {
         require Config;
         $rv = ExtUtils::Install::uninstall(
-            "$Config::Config{installsitearch}/auto/$name/.packlist"
+            $args{packlist_read}||"$Config::Config{installsitearch}/auto/$name/.packlist"
         );
     }
 
@@ -370,6 +396,70 @@ sub _install_or_uninstall {
     File::Path::rmtree([$tmpdir]);
     return $rv;
 }
+
+# Returns the default installation target as used by
+# ExtUtils::Install::install(). First parameter should be the base
+# directory containing the blib/ we're installing from.
+# Second parameter should be the name of the distribution for the packlist
+# paths. Third parameter may be a hash reference with user defined keys for
+# the target hash. In fact, any contents that do not start with 'inst_' are
+# skipped.
+sub _installation_target {
+    require Config;
+    my $dir = shift;
+    my $name = shift;
+    my $user = shift || {};
+
+    # accepted sources (and user overrides)
+    my %sources = (
+      inst_lib => File::Spec->catdir($dir,"blib","lib"),
+      inst_archlib => File::Spec->catdir($dir,"blib","arch"),
+      inst_bin => File::Spec->catdir($dir,'blib','bin'),
+      inst_script => File::Spec->catdir($dir,'blib','script'),
+      inst_man1dir => File::Spec->catdir($dir,'blib','man1'),
+      inst_man3dir => File::Spec->catdir($dir,'blib','man3'),
+      packlist_read => 'read',
+      packlist_write => 'write',
+    );
+
+
+    # default targets
+    my $target = {
+       read => $Config::Config{sitearchexp}."/auto/$name/.packlist",
+       write => $Config::Config{installsitearch}."/auto/$name/.packlist",
+       $sources{inst_lib}
+            => (directory_not_empty($sources{inst_archlib}))
+            ? $Config::Config{installsitearch}
+            : $Config::Config{installsitelib},
+       $sources{inst_archlib}   => $Config::Config{installsitearch},
+       $sources{inst_bin}       => $Config::Config{installbin} ,
+       $sources{inst_script}    => $Config::Config{installscript},
+       $sources{inst_man1dir}   => $Config::Config{installman1dir},
+       $sources{inst_man3dir}   => $Config::Config{installman3dir},
+    };
+    
+    # Included for future support for ${flavour}perl external lib installation
+#    if ($Config::Config{flavour_perl}) {
+#        my $ext = File::Spec->catdir($dir, 'blib', 'ext');
+#        # from => to
+#        $sources{inst_external_lib}    = File::Spec->catdir($ext, 'lib');
+#        $sources{inst_external_bin}    = File::Spec->catdir($ext, 'bin');
+#        $sources{inst_external_include} = File::Spec->catdir($ext, 'include');
+#        $sources{inst_external_src}    = File::Spec->catdir($ext, 'src');
+#        $target->{ $sources{inst_external_lib} }     = $Config::Config{flavour_install_lib};
+#        $target->{ $sources{inst_external_bin} }     = $Config::Config{flavour_install_bin};
+#        $target->{ $sources{inst_external_include} } = $Config::Config{flavour_install_include};
+#        $target->{ $sources{inst_external_src} }     = $Config::Config{flavour_install_src};
+#    }
+    
+    # insert user overrides
+    foreach my $key (keys %$user) {
+        $target->{ $sources{$key} } = $user->{$key} if exists $sources{$key};
+    }
+
+    return $target;
+}
+
 
 =head2 sign_par
 
