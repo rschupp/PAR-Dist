@@ -198,7 +198,8 @@ sub blib_to_par {
         close OLD_META;
         close META;
     }
-    elsif ((!$name or !$version) and open(MAKEFILE, "Makefile")) {
+    
+    if ((!$name or !$version) and open(MAKEFILE, "Makefile")) {
         while (<MAKEFILE>) {
             if (/^DISTNAME\s+=\s+(.*)$/) {
                 $name ||= $1;
@@ -209,6 +210,20 @@ sub blib_to_par {
         }
     }
 
+    if (not defined($name) or not defined($version)) {
+        # could not determine name or version. Error.
+        my $what;
+        if (not defined $name) {
+            $what = 'name';
+            $what .= ' and version' if not defined $version;
+        }
+        elsif (not defined $version) {
+            $what = 'version';
+        }
+        
+        warn "I was unable to determine the $what of the PAR distribution. Please create a Makefile or META.yml file from which we can infer the information or just specify the missing information as an option to blib_to_par.";
+    }
+    
     $name =~ s/\s+$//;
     $version =~ s/\s+$//;
 
