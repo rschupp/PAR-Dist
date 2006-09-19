@@ -21,7 +21,7 @@ $VERSION    = '0.19';
 /;
 
 use strict;
-use Carp qw/croak/;
+use Carp qw/carp croak/;
 use File::Spec;
 
 =head1 NAME
@@ -221,7 +221,8 @@ sub blib_to_par {
             $what = 'version';
         }
         
-        warn "I was unable to determine the $what of the PAR distribution. Please create a Makefile or META.yml file from which we can infer the information or just specify the missing information as an option to blib_to_par.";
+        carp("I was unable to determine the $what of the PAR distribution. Please create a Makefile or META.yml file from which we can infer the information or just specify the missing information as an option to blib_to_par.");
+        return();
     }
     
     $name =~ s/\s+$//;
