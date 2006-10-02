@@ -1,4 +1,7 @@
 
+By: smueller on 2006/10/02
+    * Repaired PAR::Dist::install_par's custom target logic.
+____________________________________________________________________________
 By: smueller on 2006/09/03
 Log:
     * It's not possible to specify your own installation paths.

@@ -444,7 +444,7 @@ sub _installation_target {
        read => $Config::Config{sitearchexp}."/auto/$name/.packlist",
        write => $Config::Config{installsitearch}."/auto/$name/.packlist",
        $sources{inst_lib}
-            => (directory_not_empty($sources{inst_archlib}))
+            => (_directory_not_empty($sources{inst_archlib}))
             ? $Config::Config{installsitearch}
             : $Config::Config{installsitelib},
        $sources{inst_archlib}   => $Config::Config{installsitearch},
@@ -476,6 +476,19 @@ sub _installation_target {
     return $target;
 }
 
+sub _directory_not_empty {
+    require File::Find;
+    my($dir) = @_;
+    my $files = 0;
+    File::Find::find(sub {
+	    return if $_ eq ".exists";
+        if (-f) {
+            $File::Find::prune++;
+            $files = 1;
+            }
+    }, $dir);
+    return $files;
+}
 
 =head2 sign_par
 
