@@ -1,4 +1,9 @@
 
+By: smueller on 2006/10/11
+    * Added a more flexible way of using PAR::Dist::install_par's
+      custom target logic.
+    * This is 0.20
+____________________________________________________________________________
 By: smueller on 2006/10/02
     * Repaired PAR::Dist::install_par's custom target logic.
 ____________________________________________________________________________
