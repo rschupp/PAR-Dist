@@ -1,4 +1,10 @@
 
+By: smueller on 2006/10/12
+    * _install_or_uninstall tries to remove the temporary directory
+      while cwd() is in that directory. That fails on win32 leaving
+      temporary directories on disk. This is now fixed.
+    * This is 0.21
+____________________________________________________________________________
 By: smueller on 2006/10/11
     * Added a more flexible way of using PAR::Dist::install_par's
       custom target logic.

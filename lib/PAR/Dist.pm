@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.20';
+$VERSION    = '0.21';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -377,6 +377,9 @@ sub _install_or_uninstall {
     my %ENV_copy = %ENV;
     $ENV{PERL_INSTALL_ROOT} = $args{prefix} if defined $args{prefix};
 
+    require Cwd;
+    my $old_dir = Cwd::cwd();
+    
     my ($dist, $tmpdir) = _unzip_to_tmpdir( dist => $args{dist}, subdir => 'blib' );
 
     if ( open (META, File::Spec->catfile('blib', 'META.yml')) ) {
@@ -419,6 +422,7 @@ sub _install_or_uninstall {
 
     %ENV = %ENV_copy;
 
+    chdir($old_dir);
     File::Path::rmtree([$tmpdir]);
     return $rv;
 }
