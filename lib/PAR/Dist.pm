@@ -940,13 +940,20 @@ sub parse_dist_name {
 
 	(undef, undef, $file) = File::Spec->splitpath($file);
 	
-	my $version = qr/v?\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+/;
+	my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
 	$file =~ s/\.(?:par|tar\.gz|tar)$//i;
 	my @elem = split /-/, $file;
 	my (@dn, $dv, @arch, $pv);
 	while (@elem) {
 		my $e = shift @elem;
-		if ($e =~ /^$version$/o) {
+		if (
+            $e =~ /^$version$/o
+            and not(# if not next token also a version
+                    # (assumes an arch string doesnt start with a version...)
+                @elem and $elem[0] =~ /^$version$/o
+            )
+        ) {
+            
 			$dv = $e;
 			last;
 		}
