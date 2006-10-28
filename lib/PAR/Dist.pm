@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.21';
+$VERSION    = '0.22';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -927,7 +927,8 @@ Math-Symbolic-0.502-x86_64-linux-gnu-thread-multi-5.8.7
 Math-Symbolic-0.502
 
 The ".tar.gz" or ".par" extensions as well as any
-preceding paths are stripped before parsing.
+preceding paths are stripped before parsing. Starting with C<PAR::Dist>
+0.22, versions containing a preceding C<v> are parsed correctly.
 
 This function is not exported by default.
 
@@ -939,7 +940,7 @@ sub parse_dist_name {
 
 	(undef, undef, $file) = File::Spec->splitpath($file);
 	
-	my $version = qr/\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+/;
+	my $version = qr/v?\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+/;
 	$file =~ s/\.(?:par|tar\.gz|tar)$//i;
 	my @elem = split /-/, $file;
 	my (@dn, $dv, @arch, $pv);

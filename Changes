@@ -1,4 +1,7 @@
 
+By: smueller on 2006/10/28
+    * parse_dist_name now supports versions starting with a 'v'.
+____________________________________________________________________________
 By: smueller on 2006/10/12
     * _install_or_uninstall tries to remove the temporary directory
       while cwd() is in that directory. That fails on win32 leaving
