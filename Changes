@@ -1,4 +1,7 @@
 
+By: smueller on 2007/04/30
+    * Patch from Jos Boumans: Remove use of "static" variable.
+____________________________________________________________________________
 By: smueller on 2006/10/28
     * parse_dist_name now supports versions starting with a 'v'.
 ____________________________________________________________________________

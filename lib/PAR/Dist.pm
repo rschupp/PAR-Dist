@@ -30,7 +30,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.20 of PAR::Dist, released Oct 11, 2006.
+This document describes version 0.22 of PAR::Dist, released Apr 30, 2007.
 
 =head1 SYNOPSIS
 
@@ -138,8 +138,11 @@ sub blib_to_par {
     my %args = @_;
     require Config;
 
+
+    # don't use 'my $foo ... if ...' it creates a static variable!
+    my $dist;
     my $path	= $args{path};
-    my $dist	= File::Spec->rel2abs($args{dist}) if $args{dist};
+    $dist	= File::Spec->rel2abs($args{dist}) if $args{dist};
     my $name	= $args{name};
     my $version	= $args{version};
     my $suffix	= $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par";
@@ -1069,9 +1072,9 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 =head1 AUTHORS
 
-Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2006
+Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2007
 
-Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2006
+Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2007
 
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
@@ -1081,7 +1084,7 @@ Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2003, 2004, 2006 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2003-2007 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
