@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.22';
+$VERSION    = '0.23';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -18,6 +18,7 @@ $VERSION    = '0.22';
 
 @EXPORT_OK = qw/
   parse_dist_name
+  contains_binaries
 /;
 
 use strict;
@@ -30,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.22 of PAR::Dist, released Apr 30, 2007.
+This document describes version 0.23 of PAR::Dist, released Jun 20, 2007.
 
 =head1 SYNOPSIS
 
@@ -1063,6 +1064,58 @@ YAML
     return 1;
 }
 
+
+=head2 contains_binaries
+
+This function is not exported by default.
+
+Opens a PAR archive tries to determine whether that archive
+contains platform-specific binary code.
+
+Takes one named parameter: I<dist>. If only one parameter is
+passed, it is treated as the I<dist> parameter. (Have a look
+at the description in the C<FUNCTIONS> section above.)
+
+Throws a fatal error if the PAR archive could not be found.
+
+Returns one if the PAR was found to contain binary code
+and zero otherwise.
+
+=cut
+
+sub contains_binaries {
+    require File::Find;
+    my %args = &_args;
+    my $dist = $args{dist};
+    return undef if not defined $dist or not -r $dist;
+    require Cwd;
+    require File::Path;
+
+    # The unzipping will change directories. Remember old dir.
+    my $old_cwd = Cwd::cwd();
+    
+    # Unzip the base par to a temp. dir.
+    (undef, my $base_dir) = _unzip_to_tmpdir(
+        dist => $dist, subdir => 'blib'
+    );
+    my $blibdir = File::Spec->catdir($base_dir, 'blib');
+    my $archdir = File::Spec->catdir($blibdir, 'arch');
+
+    my $found = 0;
+
+    File::Find::find(
+      sub {
+        $found++ if -f $_ and not /^\.exists$/;
+      },
+      $archdir
+    );
+
+    chdir($old_cwd);
+    
+    File::Path::rmtree([$base_dir]);
+    
+    return $found ? 1 : 0;
+}
 
 1;
 

@@ -1,4 +1,8 @@
 
+By: smueller on 2007/06/20
+    * Add contains_binaries.
+    * This is 0.23
+____________________________________________________________________________
 By: smueller on 2007/04/30
     * Patch from Jos Boumans: Remove use of "static" variable.
 ____________________________________________________________________________
