@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.23';
+$VERSION    = '0.24';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.23 of PAR::Dist, released Jun 24, 2007.
+This document describes version 0.24 of PAR::Dist, released Jul 20, 2007.
 
 =head1 SYNOPSIS
 

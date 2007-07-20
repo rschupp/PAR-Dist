@@ -1,4 +1,11 @@
 
+By: smueller on 2007/07/20
+    * Remove shebang from Makefile.PL. No assumptions about the user's perl.
+    * Port Makefile.PL to use ExtUtils::MakeMaker so I no longer need to
+      release for Module::Install upgrades. PAR::Dist wasn't using any of
+      the advanced features anyway!
+    * This is 0.24.
+____________________________________________________________________________
 By: smueller on 2007/06/20
     * Add contains_binaries.
     * This is 0.23
