@@ -1,7 +1,3 @@
-#!/usr/bin/env perl
-# $File: //member/autrijus/PAR-Dist/Makefile.PL $ $Author: autrijus $
-# $Revision: #5 $ $Change: 9530 $ $DateTime: 2004/01/01 05:24:09 $
-
 use inc::Module::Install;
 
 name	    ('PAR-Dist');
