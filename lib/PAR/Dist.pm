@@ -776,6 +776,12 @@ sub _unzip {
     my $path = $args{path} || File::Spec->curdir;
     return unless -f $dist;
 
+    # Try fast unzipping first
+    if (eval { require Archive::Unzip::Burst; 1 }) {
+        my $return = Archive::Unzip::Burst::unzip($dist, $path);
+        return if $return; # true return value == error (a la system call)
+    }
+    # Then slow unzipping
     if (eval { require Archive::Zip; 1 }) {
         my $zip = Archive::Zip->new;
         local %SIG;
@@ -783,9 +789,12 @@ sub _unzip {
         return unless $zip->read($dist) == Archive::Zip::AZ_OK()
                   and $zip->extractTree('', "$path/") == Archive::Zip::AZ_OK();
     }
+    # Then fall back to the system
     else {
         return if system(unzip => $dist, '-d', $path);
     }
+
+    return 1;
 }
 
 sub _zip {

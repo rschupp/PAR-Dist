@@ -1,4 +1,8 @@
 
+By: smueller on 2007/06/20
+    * Use Archive::Unzip::Burst for unzipping if available.
+    * Some refactoring and code cleanup.
+____________________________________________________________________________
 By: smueller on 2007/07/20
     * Remove shebang from Makefile.PL. No assumptions about the user's perl.
     * Port Makefile.PL to use ExtUtils::MakeMaker so I no longer need to
