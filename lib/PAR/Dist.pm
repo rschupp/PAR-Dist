@@ -607,7 +607,7 @@ sub merge_par {
             {wanted =>sub {
                 my $file = $File::Find::name;
                 push @files, $file if -f $file;
-                push @dirs, $file if -d $file;
+                push @dirs, $file if -d _;
             }},
             $add_dir
         );
