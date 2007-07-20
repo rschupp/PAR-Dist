@@ -51,7 +51,7 @@ In programs:
 
     install_par("http://foo.com/DBI-1.37-MSWin32-5.8.0.par"); # works too
     install_par("http://foo.com/DBI-1.37"); # auto-appends archname + perlver
-    install_par("cpan://SMUELLER/PAR-0.91"); # uses CPAN author directory
+    install_par("cpan://SMUELLER/PAR-Packer-0.975"); # uses CPAN author directory
 
 =head1 DESCRIPTION
 
@@ -903,7 +903,9 @@ sub _unzip_to_tmpdir {
     require File::Temp;
 
     my $dist   = File::Spec->rel2abs($args{dist});
-    my $tmpdir = File::Temp::mkdtemp(File::Spec->catdir(File::Spec->tmpdir, "parXXXXX")) or die $!;
+    my $tmpdirname = File::Spec->catdir(File::Spec->tmpdir, "parXXXXX");
+    my $tmpdir = File::Temp::mkdtemp($tmpdirname)        
+      or die "Could not create temporary directory from template '$tmpdirname': $!";
     my $path = $tmpdir;
     $path = File::Spec->catdir($tmpdir, $args{subdir}) if defined $args{subdir};
     _unzip(dist => $dist, path => $path);
