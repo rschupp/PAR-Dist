@@ -802,15 +802,24 @@ sub _zip {
     }
 }
 
-sub _args {
-    unshift @_, (glob('*.par'))[0] unless @_;
-    @_ = (dist => @_) if @_ == 1;
-    my %args = @_;
 
+# This sub munges the arguments to most of the PAR::Dist functions
+# into a hash. On the way, it downloads PAR archives as necessary, etc.
+sub _args {
+    # default to the first .par in the CWD
+    if (not @_) {
+        @_ = (glob('*.par'))[0];
+    }
+
+    # single argument => it's a distribution file name or URL
+    @_ = (dist => @_) if @_ == 1;
+
+    my %args = @_;
     $args{name} ||= $args{dist};
+
     # If we are installing from an URL, we want to munge the
     # distribution name so that it is in form "Module-Name"
-    if ($args{name}) {
+    if (defined $args{name}) {
         $args{name} =~ s/^\w+:\/\///;
         my @elems = parse_dist_name($args{name});
         # @elems is name, version, arch, perlversion
@@ -822,17 +831,25 @@ sub _args {
             $args{name} =~ s/^([0-9A-Za-z_-]+)-\d+\..+$/$1/;
         }
     }
-    $args{dist} .= '-' . do {
-        require Config;
-        $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par"
-    } unless !$args{dist} or $args{dist} =~ /\.[a-zA-Z_][^.]*$/;
 
-    $args{dist} = _fetch(dist => $args{dist})
-      if ($args{dist} and $args{dist} =~ m!^\w+://!);
+    # append suffix if there is none
+    if ($args{dist} and not $args{dist} =~ /\.[a-zA-Z_][^.]*$/) {
+        require Config;
+        my $suffix = $args{suffix};
+        $suffix ||= "$Config::Config{archname}-$Config::Config{version}.par";
+        $args{dist} .= "-$suffix";
+    }
+
+    # download if it's an URL
+    if ($args{dist} and $args{dist} =~ m!^\w+://!) {
+        $args{dist} = _fetch(dist => $args{dist})
+    }
+
     return %args;
 }
 
 
+# Download PAR archive, but only if necessary (mirror!)
 my %escapes;
 sub _fetch {
     my %args = @_;
