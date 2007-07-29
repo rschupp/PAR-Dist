@@ -1,7 +1,8 @@
 
-By: smueller on 2007/06/20
+By: smueller on 2007/06/29
     * Use Archive::Unzip::Burst for unzipping if available.
     * Some refactoring and code cleanup.
+    * This is 0.25.
 ____________________________________________________________________________
 By: smueller on 2007/07/20
     * Remove shebang from Makefile.PL. No assumptions about the user's perl.
