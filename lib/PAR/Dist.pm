@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.25';
+$VERSION    = '0.26';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.25 of PAR::Dist, released Jul 29, 2007.
+This document describes version 0.26 of PAR::Dist, released Feb  3, 2008.
 
 =head1 SYNOPSIS
 
@@ -876,7 +876,7 @@ sub _fetch {
     $file = File::Spec->catfile( $ENV{PAR_TEMP}, $file);
     my $rc = LWP::Simple::mirror( $args{dist}, $file );
 
-    if (!LWP::Simple::is_success($rc)) {
+    if (!LWP::Simple::is_success($rc) and $rc != 304) {
         die "Error $rc: ", LWP::Simple::status_message($rc), " ($args{dist})\n";
     }
 
