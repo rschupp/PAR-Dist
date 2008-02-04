@@ -1,3 +1,8 @@
+By: smueller on 2008/02/04
+    * No more signature. I keep breaking things with it.
+    * This is 0.27.
+____________________________________________________________________________
+
 By: smueller on 2008/02/03
     * If the return code from LWP::Simple is 304/not modified,
       then that's a success. So we shouldn't throw an error.

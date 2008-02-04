@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.26';
+$VERSION    = '0.27';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
