@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.27';
+$VERSION    = '0.28';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.26 of PAR::Dist, released Feb  3, 2008.
+This document describes version 0.28 of PAR::Dist, released Feb  5, 2008.
 
 =head1 SYNOPSIS
 
@@ -335,7 +335,10 @@ The following section outlines the parameter names and default settings:
 The C<packlist_write> parameter is used to control where the F<.packlist>
 file is written to. (Necessary for uninstallation.)
 The C<packlist_read> parameter specifies a .packlist file to merge in if
-it exists.
+it exists. By setting any of the above installation targets to C<undef>,
+you can remove that target altogether. For example, passing
+C<inst_man1dir => undef, inst_man3dir => undef> means that the contained
+manual pages won't be installed. This is not available for the packlists.
 
 Finally, you may specify a C<custom_targets> parameter. Its value should be
 a reference to a hash of custom installation targets such as
@@ -488,7 +491,15 @@ sub _installation_target {
     
     # insert user overrides
     foreach my $key (keys %$user) {
-        $target->{ $sources{$key} } = $user->{$key} if exists $sources{$key};
+        my $value = $user->{$key};
+        if (not defined $value and $key ne 'packlist_read' and $key ne 'packlist_write') {
+          # undef means "remove"
+          delete $target->{ $sources{$key} };
+        }
+        elsif (exists $sources{$key}) {
+          # overwrite stuff, don't let the user create new entries
+          $target->{ $sources{$key} } = $value;
+        }
     }
 
     return $target;

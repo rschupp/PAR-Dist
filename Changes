@@ -1,3 +1,11 @@
+By: smueller on 2008/02/05
+    * Setting installation targets to undef with install_par
+      should remove them altogether now. This way, you can
+      make sure, some parts aren't installed. (Such as manpages
+      on win32)
+    * This is 0.28.
+    * Now hopefully back to bi-annual releases ;)
+____________________________________________________________________________
 By: smueller on 2008/02/04
     * No more signature. I keep breaking things with it.
     * This is 0.27.
