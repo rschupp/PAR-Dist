@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.28';
+$VERSION    = '0.29';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -873,6 +873,11 @@ sub _args {
 my %escapes;
 sub _fetch {
     my %args = @_;
+
+    if ($args{dist} =~ s/^file:\/\///) {
+      return $args{dist} if -e $args{dist};
+      return;
+    }
     require LWP::Simple;
 
     $ENV{PAR_TEMP} ||= File::Spec->catdir(File::Spec->tmpdir, 'par');

@@ -1,3 +1,7 @@
+By: smueller on 2008/02/06
+    * Make file://foo.par URLs installable.
+    * This is 0.29.
+____________________________________________________________________________
 By: smueller on 2008/02/05
     * Setting installation targets to undef with install_par
       should remove them altogether now. This way, you can
