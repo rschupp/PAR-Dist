@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.29';
+$VERSION    = '0.31';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.28 of PAR::Dist, released Feb  5, 2008.
+This document describes version 0.31 of PAR::Dist, released May 28, 2008.
 
 =head1 SYNOPSIS
 
@@ -789,7 +789,7 @@ sub _unzip {
 
     # Try fast unzipping first
     if (eval { require Archive::Unzip::Burst; 1 }) {
-        my $return = Archive::Unzip::Burst::unzip($dist, $path);
+        my $return = !Archive::Unzip::Burst::unzip($dist, $path);
         return if $return; # true return value == error (a la system call)
     }
     # Then slow unzipping

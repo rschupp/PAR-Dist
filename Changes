@@ -1,3 +1,7 @@
+By: smueller on 2008/05/28
+    * Fix small bug in _unzip that could cause double extraction.
+    * This is 0.31.
+____________________________________________________________________________
 By: smueller on 2008/02/06
     * Make file://foo.par URLs installable.
     * This is 0.29.
