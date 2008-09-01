@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.31';
+$VERSION    = '0.32';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -129,6 +129,10 @@ perl by default.
 
 The output filename for the PAR distribution.
 
+=item quiet
+
+Set to true to suppress as much output as possible.
+
 =back
 
 =cut
@@ -141,6 +145,7 @@ sub blib_to_par {
 
 
     # don't use 'my $foo ... if ...' it creates a static variable!
+    my $quiet = $args{quiet} || 0;
     my $dist;
     my $path	= $args{path};
     $dist	= File::Spec->rel2abs($args{dist}) if $args{dist};
@@ -268,7 +273,7 @@ YAML
         $pathname =~ s!\\!/!g;
         $pathname =~ s!:!|!g;
     };
-    print << ".";
+    print << "." if !$quiet;
 Successfully created binary distribution '$file'.
 Its contents are accessible in compliant browsers as:
     jar:file://$pathname!/MANIFEST
@@ -549,7 +554,12 @@ sub verify_par {
 
 =head2 merge_par
 
-Merge two or more PAR distributions into one. First argument must
+I<Note:> Since version 0.32 of PAR::Dist, this function requires a YAML
+reader. The order of precedence is:
+
+  YAML YAML::Syck YAML::Tiny YAML::XS
+
+Merges two or more PAR distributions into one. First argument must
 be the name of the distribution you want to merge all others into.
 Any following arguments will be interpreted as the file names of
 further PAR distributions to merge into the first one.
@@ -558,7 +568,9 @@ further PAR distributions to merge into the first one.
 
 This will merge the distributions C<foo.par>, C<bar.par> and C<baz.par>
 into the distribution C<foo.par>. C<foo.par> will be overwritten!
-The original META.yml of C<foo.par> is retained.
+
+The original META.yml of C<foo.par> is retained, but augmented with any
+C<provides> sections from the other C<.par> files.
 
 =cut
 
@@ -595,9 +607,10 @@ sub merge_par {
     my $blibdir = File::Spec->catdir($base_dir, 'blib');
 
     # move the META.yml to the (main) temp. dir.
+    my $main_meta_file = File::Spec->catfile($base_dir, 'META.yml');
     File::Copy::move(
         File::Spec->catfile($blibdir, 'META.yml'),
-        File::Spec->catfile($base_dir, 'META.yml')
+        $main_meta_file
     );
     # delete (incorrect) MANIFEST
     unlink File::Spec->catfile($blibdir, 'MANIFEST');
@@ -610,6 +623,13 @@ sub merge_par {
         (undef, my $add_dir) = _unzip_to_tmpdir(
             dist => $par
         );
+
+        # merge the meta (at least the provides info) into the main meta.yml
+        my $meta_file = File::Spec->catfile($add_dir, 'META.yml');
+        if (-f $meta_file) {
+          _merge_meta($main_meta_file, $meta_file);
+        }
+
         my @files;
         my @dirs;
         # I hate File::Find
@@ -656,13 +676,75 @@ sub merge_par {
     unlink File::Spec->catfile($blibdir, 'META.yml');
     
     chdir($base_dir);
-    my $resulting_par_file = Cwd::abs_path(blib_to_par());
+    my $resulting_par_file = Cwd::abs_path(blib_to_par(quiet => 1));
     chdir($old_cwd);
     File::Copy::move($resulting_par_file, $base_par);
     
     File::Path::rmtree([$base_dir]);
 }
 
+
+sub _merge_meta {
+  my $meta_orig_file = shift;
+  my $meta_extra_file = shift;
+
+  my (undef, undef, $yaml_loadfile, $yaml_dumpfile) = _get_working_yaml_functions();
+  die "Cannot merge META.yml files without a YAML reader/writer" if !$yaml_loadfile;
+
+  my $orig_meta  = $yaml_loadfile->($meta_orig_file);
+  my $extra_meta = $yaml_loadfile->($meta_extra_file);
+
+  # I seem to remember there was this incompatibility between the different
+  # YAML implementations with regards to "document" handling:
+  my $orig_tree  = (ref($orig_meta) eq 'ARRAY' ? $orig_meta->[0] : $orig_meta);
+  my $extra_tree = (ref($extra_meta) eq 'ARRAY' ? $extra_meta->[0] : $extra_meta);
+
+  # do nothing if the extra meta has no provides field.
+  return() if not exists $extra_tree->{provides};  
+
+  my $extra_provides = $extra_tree->{provides};
+  $orig_tree->{provides} = {} if not defined $orig_tree->{provides};
+  my $orig_provides = $orig_tree->{provides};
+
+  # two level clone is enough wrt META spec 1.4
+  # overwrite the original provides since we're also overwriting the files.
+  foreach my $module (keys %$extra_provides) {
+    my $extra_mod_hash = $extra_provides->{$module};
+    my %mod_hash;
+    $mod_hash{$_} = $extra_mod_hash->{$_} for keys %$extra_mod_hash;
+    $orig_provides->{$module} = \%mod_hash;
+  }
+  
+  $yaml_dumpfile->($meta_orig_file, $orig_meta);
+
+  return 1;
+}
+
+# Tries to load any YAML reader writer I know of
+# returns nothing on failure or sub references for
+# Load, Dump, LoadFile, DumpFile
+# on success.
+sub _get_working_yaml_functions {
+  my @modules = qw(YAML YAML::Syck YAML::Tiny YAML::XS);
+
+  my @yaml_functions;
+  foreach my $module (@modules) {
+    eval "require $module;";
+    if (!$@) {
+      no strict 'refs';
+      push @yaml_functions, \&{"${module}::Load"};
+      push @yaml_functions, \&{"${module}::Dump"};
+      push @yaml_functions, \&{"${module}::LoadFile"};
+      push @yaml_functions, \&{"${module}::DumpFile"};
+      last;
+    }
+  }
+  if (not @yaml_functions == 4) {
+    warn "Cannot find a working YAML reader/writer implementation. Tried to load all of '@modules'";
+    return();
+  }
+  return(@yaml_functions);
+}
 
 =head2 remove_man
 
