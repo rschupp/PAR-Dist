@@ -8,8 +8,8 @@ BEGIN { $loaded = eval { require PAR::Dist; 1 } };
 BEGIN {
   my $tests = 25;
   if ($loaded) {
-    my ($load) = PAR::Dist::_get_working_yaml_functions();
-    if ($load) {
+    my ($y_func) = PAR::Dist::_get_yaml_functions();
+    if ($y_func and exists $y_func->{Load}) {
       plan tests => $tests;
       ok(1);
     }
@@ -76,12 +76,12 @@ PAR::Dist::merge_par(@tmp);
 
 ok(1); # got to this point
 
-my ($load) = PAR::Dist::_get_working_yaml_functions();
+my ($y_func) = PAR::Dist::_get_yaml_functions();
 
 my $meta = PAR::Dist::get_meta($tmp[0]);
 ok(defined($meta));
 
-my $result = $load->( $meta );
+my $result = $y_func->{Load}->( $meta );
 ok(defined $result);
 $result = $result->[0] if ref($result) eq 'ARRAY';
 use Data::Dumper;

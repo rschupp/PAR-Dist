@@ -688,11 +688,14 @@ sub _merge_meta {
   my $meta_orig_file = shift;
   my $meta_extra_file = shift;
 
-  my (undef, undef, $yaml_loadfile, $yaml_dumpfile) = _get_working_yaml_functions();
-  die "Cannot merge META.yml files without a YAML reader/writer" if !$yaml_loadfile;
+  my $yaml_functions = _get_yaml_functions();
 
-  my $orig_meta  = $yaml_loadfile->($meta_orig_file);
-  my $extra_meta = $yaml_loadfile->($meta_extra_file);
+  die "Cannot merge META.yml files without a YAML reader/writer"
+    if !exists $yaml_functions->{LoadFile}
+    or !exists $yaml_functions->{DumpFile};
+
+  my $orig_meta  = $yaml_functions->{LoadFile}->($meta_orig_file);
+  my $extra_meta = $yaml_functions->{LoadFile}->($meta_extra_file);
 
   # I seem to remember there was this incompatibility between the different
   # YAML implementations with regards to "document" handling:
@@ -715,35 +718,43 @@ sub _merge_meta {
     $orig_provides->{$module} = \%mod_hash;
   }
   
-  $yaml_dumpfile->($meta_orig_file, $orig_meta);
+  $yaml_functions->{DumpFile}->($meta_orig_file, $orig_meta);
 
   return 1;
 }
 
 # Tries to load any YAML reader writer I know of
-# returns nothing on failure or sub references for
-# Load, Dump, LoadFile, DumpFile
-# on success.
-sub _get_working_yaml_functions {
-  my @modules = qw(YAML YAML::Syck YAML::Tiny YAML::XS);
+# returns nothing on failure or hash reference containing
+# a subset of Load, Dump, LoadFile, DumpFile
+# entries with sub references on success.
+sub _get_yaml_functions {
+  # reasoning for the ranking here:
+  # - syck is fast and reasonably complete
+  # - YAML.pm is slow and aging
+  # - Tiny is only a very small subset
+  # - XS is very new and I'm not sure it's ready for prime-time yet
+  # - Parse... is only a reader and only deals with the same subset as ::Tiny
+  my @modules = qw(YAML::Syck YAML YAML::Tiny YAML::XS Parse::CPAN::Meta);
 
-  my @yaml_functions;
+  my %yaml_functions;
   foreach my $module (@modules) {
     eval "require $module;";
     if (!$@) {
-      no strict 'refs';
-      push @yaml_functions, \&{"${module}::Load"};
-      push @yaml_functions, \&{"${module}::Dump"};
-      push @yaml_functions, \&{"${module}::LoadFile"};
-      push @yaml_functions, \&{"${module}::DumpFile"};
+      foreach my $sub (qw(Load Dump LoadFile DumpFile)) {
+        no strict 'refs';
+        my $subref = \&{"${module}::$sub"};
+        if (defined $subref) {
+          $yaml_functions{$sub} = $subref;
+        }
+      }
       last;
     }
-  }
-  if (not @yaml_functions == 4) {
+  } # end foreach module candidates
+  if (not keys %yaml_functions) {
     warn "Cannot find a working YAML reader/writer implementation. Tried to load all of '@modules'";
     return();
   }
-  return(@yaml_functions);
+  return(\%yaml_functions);
 }
 
 =head2 remove_man
