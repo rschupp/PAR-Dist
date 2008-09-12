@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.31 of PAR::Dist, released May 28, 2008.
+This document describes version 0.32 of PAR::Dist, released September 12, 2008.
 
 =head1 SYNOPSIS
 
