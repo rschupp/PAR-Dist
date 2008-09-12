@@ -1,8 +1,11 @@
+By: smueller on 2008/09/12
+    * Version bump, fix tests.
+    * This is 0.32.
+____________________________________________________________________________
 By: smueller on 2008/09/01
     * merge_par now requires a (i.e. any) YAML reader
     * merge_par now merges the "provides" sections of the META.yml's
     * blib_to_par now accepts a "quiet" option
-    * This is 0.32.
 ____________________________________________________________________________
 By: smueller on 2008/05/28
     * Fix small bug in _unzip that could cause double extraction.
