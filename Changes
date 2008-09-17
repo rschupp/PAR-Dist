@@ -1,3 +1,8 @@
+By: smueller on 2008/09/17
+    * Better diagnostics for the CPAN testers test failures.
+    * Extra -f check in _merge_meta.
+    * This is 0.33.
+____________________________________________________________________________
 By: smueller on 2008/09/12
     * Version bump, fix tests.
     * This is 0.32.
