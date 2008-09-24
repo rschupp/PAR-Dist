@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.33';
+$VERSION    = '0.34';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.33 of PAR::Dist, released September 17, 2008.
+This document describes version 0.34 of PAR::Dist, released September 24, 2008.
 
 =head1 SYNOPSIS
 
@@ -257,9 +257,7 @@ YAML
     chdir('blib');
     require Cwd;
     my $zipoutfile = File::Spec->catfile(File::Spec->updir, $file);
-    _zip(dist => $zipoutfile)
-      or die "Could not zip current directory (" . Cwd::cwd()
-           . ") to the .par file '$zipoutfile': $!";
+    _zip(dist => $zipoutfile);
     chdir(File::Spec->updir);
 
     unlink File::Spec->catfile("blib", "MANIFEST");
@@ -919,6 +917,7 @@ sub _zip {
     else {
         system(qw(zip -r), $dist, File::Spec->curdir) and die $!;
     }
+    return 1;
 }
 
 

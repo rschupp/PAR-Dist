@@ -1,3 +1,7 @@
+By: smueller on 2008/09/24
+    * Do not fail if _zip() doesn't return true, doh!
+    * This is 0.34.
+____________________________________________________________________________
 By: smueller on 2008/09/17
     * Better diagnostics for the CPAN testers test failures.
     * Extra -f check in _merge_meta.
