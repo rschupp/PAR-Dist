@@ -9,10 +9,12 @@ BEGIN {
   my $tests = 25;
   if ($loaded) {  
     # skip these tests without YAML loader or without (A::Zip or zipo/unzip)
+    $PAR::Dist::DEBUG = 1;
     my ($y_func) = PAR::Dist::_get_yaml_functions();
-    if (not $y_func or not exists $y_func->{Load}) {
+    $PAR::Dist::DEBUG = 0;
+    if (not $y_func or not exists $y_func->{DumpFile}) {
       plan tests => 1;
-      skip("Skip because no YAML loader could be found");
+      skip("Skip because no YAML loader/dumper could be found");
       exit();
     }
     elsif (not eval {use Archive::Zip; 1;}

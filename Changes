@@ -1,4 +1,9 @@
 By: smueller on 2008/09/30
+    * Skip 03merge_meta tests if no YAML *DUMPER* could be found.
+    * Better debug output for the YAML-search.
+    * This is 0.36.
+____________________________________________________________________________
+By: smueller on 2008/09/30
     * Skip 03merge_meta tests if no A::Zip nor zip/unzip found.
     * Better error messages from _zip/_unzip
     * This is 0.35.
