@@ -1,3 +1,8 @@
+By: smueller on 2008/09/30
+    * Skip 03merge_meta tests if no A::Zip nor zip/unzip found.
+    * Better error messages from _zip/_unzip
+    * This is 0.35.
+____________________________________________________________________________
 By: smueller on 2008/09/24
     * Do not fail if _zip() doesn't return true, doh!
     * This is 0.34.

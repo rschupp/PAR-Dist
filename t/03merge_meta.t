@@ -7,21 +7,29 @@ use vars '$loaded';
 BEGIN { $loaded = eval { require PAR::Dist; 1 } };
 BEGIN {
   my $tests = 25;
-  if ($loaded) {
+  if ($loaded) {  
+    # skip these tests without YAML loader or without (A::Zip or zipo/unzip)
     my ($y_func) = PAR::Dist::_get_yaml_functions();
-    if ($y_func and exists $y_func->{Load}) {
-      plan tests => $tests;
-      ok(1);
-    }
-    else {
+    if (not $y_func or not exists $y_func->{Load}) {
       plan tests => 1;
       skip("Skip because no YAML loader could be found");
       exit();
     }
+    elsif (not eval {use Archive::Zip; 1;}
+           and (not system("zip") or not system("unzip")))
+    {
+      plan tests => 1;
+      skip("Skip because neither Archive::Zip nor zip/unzip could be found");
+      exit();
+    }
+    else {
+      plan tests => $tests;
+      ok(1);
+    }
   }
   else {
     plan tests => $tests;
-    ok(0);
+    ok(0, "Could not load PAR::Dist: $@");
     exit();
   }
 }

@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK/;
 
-$VERSION    = '0.34';
+$VERSION    = '0.35';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -31,7 +31,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.34 of PAR::Dist, released September 24, 2008.
+This document describes version 0.35 of PAR::Dist, released September 30, 2008.
 
 =head1 SYNOPSIS
 
@@ -899,7 +899,11 @@ sub _unzip {
     }
     # Then fall back to the system
     else {
-        return if system(unzip => $dist, '-d', $path);
+        undef $!;
+        if (system(unzip => $dist, '-d', $path)) {
+            die "Failed to unzip '$dist' to path '$path': Could neither load "
+                . "Archive::Zip nor (successfully) run the system 'unzip' (unzip said: $!)";
+        }
     }
 
     return 1;
@@ -915,7 +919,11 @@ sub _zip {
         $zip->writeToFileNamed( $dist ) == Archive::Zip::AZ_OK() or die $!;
     }
     else {
-        system(qw(zip -r), $dist, File::Spec->curdir) and die $!;
+        undef $!;
+        if (system(qw(zip -r), $dist, File::Spec->curdir)) {
+            die "Failed to zip '" .File::Spec->curdir(). "' to '$dist': Could neither load "
+                . "Archive::Zip nor (successfully) run the system 'zip' (zip said: $!)";
+        }
     }
     return 1;
 }
