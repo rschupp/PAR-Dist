@@ -1,3 +1,10 @@
+By: smueller on 2008/10/08
+    * Fix the "Skip 03merge_meta tests if no A::Zip nor zip/unzip found." logic.
+    * Add more debug output to debug mode (system calls).
+    * Add internal _check_tools() sub which checks the availability of various
+      required tools (yaml, zip).
+    * This is 0.37.
+____________________________________________________________________________
 By: smueller on 2008/09/30
     * Skip 03merge_meta tests if no YAML *DUMPER* could be found.
     * Better debug output for the YAML-search.
