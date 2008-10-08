@@ -4,22 +4,6 @@ use strict;
 use Test;
 use vars '$loaded';
 
-# stolen from Module::Install::Can
-use File::Spec;
-use ExtUtils::MakeMaker;
-sub MI_can_run {
-  my ($cmd) = @_;
-
-  my $_cmd = $cmd;
-  return $_cmd if (-x $_cmd or $_cmd = MM->maybe_command($_cmd));
-
-  for my $dir ((split /$Config::Config{path_sep}/, $ENV{PATH}), '.') {
-    my $abs = File::Spec->catfile($dir, $cmd);
-    return $abs if (-x $abs or $abs = MM->maybe_command($abs));
-  }
-
-  return;
-}
 
 BEGIN { $loaded = eval { require PAR::Dist; 1 } };
 BEGIN {
@@ -27,16 +11,14 @@ BEGIN {
   if ($loaded) {  
     # skip these tests without YAML loader or without (A::Zip or zipo/unzip)
     $PAR::Dist::DEBUG = 1;
-    my ($y_func) = PAR::Dist::_get_yaml_functions();
+    my $tools = PAR::Dist::_check_tools();
     $PAR::Dist::DEBUG = 0;
-    if (not $y_func or not exists $y_func->{DumpFile}) {
+    if (not defined $tools->{DumpFile}) {
       plan tests => 1;
       skip("Skip because no YAML loader/dumper could be found");
       exit();
     }
-    elsif (not eval {require Archive::Zip; 1;}
-           and (not MI_can_run("zip") or not MI_can_run("unzip")))
-    {
+    elsif (not defined $tools->{zip}) {
       plan tests => 1;
       skip("Skip because neither Archive::Zip nor zip/unzip could be found");
       exit();
