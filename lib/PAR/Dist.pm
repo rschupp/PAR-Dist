@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.36';
+$VERSION    = '0.37';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -33,7 +33,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.36 of PAR::Dist, released September 30, 2008.
+This document describes version 0.37 of PAR::Dist, released October  8, 2008.
 
 =head1 SYNOPSIS
 
@@ -289,18 +289,18 @@ Its contents are accessible in compliant browsers as:
 
 sub _build_blib {
     if (-e 'Build') {
-        system($^X, "Build");
+        _system_wrapper($^X, "Build");
     }
     elsif (-e 'Makefile') {
-        system($Config::Config{make});
+        _system_wrapper($Config::Config{make});
     }
     elsif (-e 'Build.PL') {
-        system($^X, "Build.PL");
-        system($^X, "Build");
+        _system_wrapper($^X, "Build.PL");
+        _system_wrapper($^X, "Build");
     }
     elsif (-e 'Makefile.PL') {
-        system($^X, "Makefile.PL");
-        system($Config::Config{make});
+        _system_wrapper($^X, "Makefile.PL");
+        _system_wrapper($Config::Config{make});
     }
 }
 
@@ -729,40 +729,6 @@ sub _merge_meta {
   return 1;
 }
 
-# Tries to load any YAML reader writer I know of
-# returns nothing on failure or hash reference containing
-# a subset of Load, Dump, LoadFile, DumpFile
-# entries with sub references on success.
-sub _get_yaml_functions {
-  # reasoning for the ranking here:
-  # - syck is fast and reasonably complete
-  # - YAML.pm is slow and aging
-  # - Tiny is only a very small subset
-  # - XS is very new and I'm not sure it's ready for prime-time yet
-  # - Parse... is only a reader and only deals with the same subset as ::Tiny
-  my @modules = qw(YAML::Syck YAML YAML::Tiny YAML::XS Parse::CPAN::Meta);
-
-  my %yaml_functions;
-  foreach my $module (@modules) {
-    eval "require $module;";
-    if (!$@) {
-      warn "PAR::Dist testers/debug info: Using '$module' as YAML implementation" if $DEBUG;
-      foreach my $sub (qw(Load Dump LoadFile DumpFile)) {
-        no strict 'refs';
-        my $subref = \&{"${module}::$sub"};
-        if (defined $subref and ref($subref) eq 'CODE') {
-          $yaml_functions{$sub} = $subref;
-        }
-      }
-      last;
-    }
-  } # end foreach module candidates
-  if (not keys %yaml_functions) {
-    warn "Cannot find a working YAML reader/writer implementation. Tried to load all of '@modules'";
-    return();
-  }
-  return(\%yaml_functions);
-}
 
 =head2 remove_man
 
@@ -903,7 +869,7 @@ sub _unzip {
     # Then fall back to the system
     else {
         undef $!;
-        if (system(unzip => $dist, '-d', $path)) {
+        if (_system_wrapper(unzip => $dist, '-d', $path)) {
             die "Failed to unzip '$dist' to path '$path': Could neither load "
                 . "Archive::Zip nor (successfully) run the system 'unzip' (unzip said: $!)";
         }
@@ -923,7 +889,7 @@ sub _zip {
     }
     else {
         undef $!;
-        if (system(qw(zip -r), $dist, File::Spec->curdir)) {
+        if (_system_wrapper(qw(zip -r), $dist, File::Spec->curdir)) {
             die "Failed to zip '" .File::Spec->curdir(). "' to '$dist': Could neither load "
                 . "Archive::Zip nor (successfully) run the system 'zip' (zip said: $!)";
         }
@@ -1268,6 +1234,91 @@ sub contains_binaries {
     File::Path::rmtree([$base_dir]);
     
     return $found ? 1 : 0;
+}
+
+sub _system_wrapper {
+  if ($DEBUG) {
+    Carp::cluck("Running system call '@_' from:");
+  }
+  return system(@_);
+}
+
+# stolen from Module::Install::Can
+# very much internal and subject to change or removal
+sub _MI_can_run {
+  require ExtUtils::MakeMaker;
+  my ($cmd) = @_;
+
+  my $_cmd = $cmd;
+  return $_cmd if (-x $_cmd or $_cmd = MM->maybe_command($_cmd));
+
+  for my $dir ((split /$Config::Config{path_sep}/, $ENV{PATH}), '.') {
+    my $abs = File::Spec->catfile($dir, $cmd);
+    return $abs if (-x $abs or $abs = MM->maybe_command($abs));
+  }
+
+  return;
+}
+
+
+# Tries to load any YAML reader writer I know of
+# returns nothing on failure or hash reference containing
+# a subset of Load, Dump, LoadFile, DumpFile
+# entries with sub references on success.
+sub _get_yaml_functions {
+  # reasoning for the ranking here:
+  # - syck is fast and reasonably complete
+  # - YAML.pm is slow and aging
+  # - Tiny is only a very small subset
+  # - XS is very new and I'm not sure it's ready for prime-time yet
+  # - Parse... is only a reader and only deals with the same subset as ::Tiny
+  my @modules = qw(YAML::Syck YAML YAML::Tiny YAML::XS Parse::CPAN::Meta);
+
+  my %yaml_functions;
+  foreach my $module (@modules) {
+    eval "require $module;";
+    if (!$@) {
+      warn "PAR::Dist testers/debug info: Using '$module' as YAML implementation" if $DEBUG;
+      foreach my $sub (qw(Load Dump LoadFile DumpFile)) {
+        no strict 'refs';
+        my $subref = \&{"${module}::$sub"};
+        if (defined $subref and ref($subref) eq 'CODE') {
+          $yaml_functions{$sub} = $subref;
+        }
+      }
+      $yaml_functions{yaml_provider} = $module;
+      last;
+    }
+  } # end foreach module candidates
+  if (not keys %yaml_functions) {
+    warn "Cannot find a working YAML reader/writer implementation. Tried to load all of '@modules'";
+  }
+  return(\%yaml_functions);
+}
+
+sub _check_tools {
+  my $tools = _get_yaml_functions();
+  if ($DEBUG) {
+    foreach (qw/Load Dump LoadFile DumpFile/) {
+      warn "No YAML support for $_ found.\n" if not defined $tools->{$_};
+    }
+  }
+
+  $tools->{zip} = undef;
+  if (eval {require Archive::Zip; 1;}) {
+    warn "Using Archive::Zip as ZIP tool.\n" if $DEBUG;
+    $tools->{zip} = 'Archive::Zip';
+  }
+  elsif (_MI_can_run("zip") and _MI_can_run("unzip")) {
+    warn "Using zip/unzip as ZIP tool.\n" if $DEBUG;
+    $tools->{zip} = 'zip';
+  }
+  else {
+    warn "Found neither Archive::Zip nor ZIP/UNZIP as valid ZIP tools.\n" if $DEBUG;
+    $tools->{zip} = undef;
+  }
+
+  return $tools;
 }
 
 1;
