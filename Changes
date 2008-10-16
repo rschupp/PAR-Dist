@@ -1,3 +1,7 @@
+By: smueller on 2008/10/16
+    * Fix _check_tools() to use *Foo{THING} syntax instead of \&{}.
+    * This is 0.38.
+____________________________________________________________________________
 By: smueller on 2008/10/08
     * Fix the "Skip 03merge_meta tests if no A::Zip nor zip/unzip found." logic.
     * Add more debug output to debug mode (system calls).

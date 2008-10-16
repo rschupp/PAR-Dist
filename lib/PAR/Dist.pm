@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.37';
+$VERSION    = '0.38';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -33,7 +33,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.37 of PAR::Dist, released October  8, 2008.
+This document describes version 0.38 of PAR::Dist, released October 16, 2008.
 
 =head1 SYNOPSIS
 
@@ -1281,7 +1281,7 @@ sub _get_yaml_functions {
       warn "PAR::Dist testers/debug info: Using '$module' as YAML implementation" if $DEBUG;
       foreach my $sub (qw(Load Dump LoadFile DumpFile)) {
         no strict 'refs';
-        my $subref = \&{"${module}::$sub"};
+        my $subref = *{"${module}::$sub"}{CODE};
         if (defined $subref and ref($subref) eq 'CODE') {
           $yaml_functions{$sub} = $subref;
         }
