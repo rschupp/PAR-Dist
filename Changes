@@ -1,3 +1,8 @@
+By: smueller on 2008/10/21
+    * Add the "verbose" option to install_par and uninstall_par.
+    * Add the "uninstall_shadows" option to install_par.
+    * This is 0.39.
+____________________________________________________________________________
 By: smueller on 2008/10/16
     * Fix _check_tools() to use *Foo{THING} syntax instead of \&{}.
     * This is 0.38.

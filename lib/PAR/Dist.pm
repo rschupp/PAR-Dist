@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.38';
+$VERSION    = '0.39';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -324,6 +324,20 @@ This string will be prepended to all installation paths.
 If it isn't specified, the environment variable
 C<PERL_INSTALL_ROOT> is used as a prefix.
 
+=item uninstall_shadows
+
+This corresponds to the C<uninstall_shadows> option of L<ExtUtils::Install>. Quoting its manual:
+If C<uninstall_shadows> is set to true, any differing versions throughout C<@INC>
+will be uninstalled. This is C<make install UNINST=1>.
+
+=item verbose
+
+This corresponds to the C<verbose> option of L<ExtUtils::Install>. According to its manual:
+If C<verbose> is true, will print out each file removed. This is C<make install VERBINST=1>.
+C<verbose> values going up to 5 show increasingly more diagnostics output.
+
+Default verbosity for PAR::Dist is 1.
+
 =back
 
 Additionally, you can use several parameters to change the default
@@ -378,6 +392,9 @@ to this is the C<packlist_read> parameter which specifies the
 F<.packlist> file to read the list of installed files from.
 It defaults to C<$Config::Config{installsitearch}/auto/$name/.packlist>.
 
+Additionally, the C<uninstall_shadows> parameter of C<install_par>
+isn't available.
+
 =cut
 
 sub uninstall_par {
@@ -427,12 +444,16 @@ sub _install_or_uninstall {
         my $custom_targets = $args{custom_targets} || {};
         $target->{$_} = $custom_targets->{$_} foreach keys %{$custom_targets};
         
-        $rv = ExtUtils::Install::install($target, 1, 0, 0);
+        my $uninstall_shadows = $args{uninstall_shadows};
+        my $verbose = $args{verbose};
+        $rv = ExtUtils::Install::install($target, $verbose, 0, $uninstall_shadows);
     }
     elsif ($action eq 'uninstall') {
         require Config;
+        my $verbose = $args{verbose};
         $rv = ExtUtils::Install::uninstall(
-            $args{packlist_read}||"$Config::Config{installsitearch}/auto/$name/.packlist"
+            $args{packlist_read}||"$Config::Config{installsitearch}/auto/$name/.packlist",
+            $verbose
         );
     }
 
