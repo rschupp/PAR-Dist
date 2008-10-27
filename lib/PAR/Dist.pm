@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.39';
+$VERSION    = '0.40';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -33,7 +33,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.38 of PAR::Dist, released October 16, 2008.
+This document describes version 0.40 of PAR::Dist, released October 27, 2008.
 
 =head1 SYNOPSIS
 
@@ -309,7 +309,10 @@ sub _build_blib {
 Installs a PAR distribution into the system, using
 C<ExtUtils::Install::install_default>.
 
-Valid parameters are:
+If only a single parameter is given, it is treated as the value for the
+C<dist> parameter.
+
+Valid named parameters are:
 
 =over 2
 
@@ -340,6 +343,9 @@ Default verbosity for PAR::Dist is 1.
 
 =back
 
+If you're just going to install into the running perl like everything else,
+you can stop reading the rest of this section now.
+
 Additionally, you can use several parameters to change the default
 installation destinations. You don't usually have to worry about this
 unless you are installing into a user-local directory.
@@ -363,6 +369,16 @@ you can remove that target altogether. For example, passing
 C<inst_man1dir => undef, inst_man3dir => undef> means that the contained
 manual pages won't be installed. This is not available for the packlists.
 
+Again, the defaults will be the normal I<site> paths from C<%Config>.
+
+(*) If the C<.par>'s I<inst_archlib> section (normally C<blib/arch>)
+isn't empty, the code in I<inst_lib> (normally C<blib/lib>) is also installed
+into the I<inst_archlib> path. This makes sense for XS modules.
+If, however, you override C<inst_lib>, this automatic conversion is
+also overridden! You can use the named parameter
+C<auto_inst_lib_conversion =E<gt> 1> to re-enable the conversion
+for custom I<inst_lib>'s.
+
 Finally, you may specify a C<custom_targets> parameter. Its value should be
 a reference to a hash of custom installation targets such as
 
@@ -370,9 +386,6 @@ a reference to a hash of custom installation targets such as
 
 You can use this to install the F<.par> archives contents to arbitrary
 locations.
-
-If only a single parameter is given, it is treated as the C<dist>
-parameter.
 
 =cut
 
@@ -490,14 +503,16 @@ sub _installation_target {
     );
 
 
+    my $par_has_archlib = _directory_not_empty( $sources{inst_archlib} );
+
     # default targets
     my $target = {
        read => $Config::Config{sitearchexp}."/auto/$name/.packlist",
        write => $Config::Config{installsitearch}."/auto/$name/.packlist",
-       $sources{inst_lib}
-            => (_directory_not_empty($sources{inst_archlib}))
-            ? $Config::Config{installsitearch}
-            : $Config::Config{installsitelib},
+       $sources{inst_lib} =>
+            ($par_has_archlib
+             ? $Config::Config{installsitearch}
+             : $Config::Config{installsitelib}),
        $sources{inst_archlib}   => $Config::Config{installsitearch},
        $sources{inst_bin}       => $Config::Config{installbin} ,
        $sources{inst_script}    => $Config::Config{installscript},
@@ -530,6 +545,12 @@ sub _installation_target {
           # overwrite stuff, don't let the user create new entries
           $target->{ $sources{$key} } = $value;
         }
+    }
+
+    # apply the automatic inst_lib => inst_archlib conversion again
+    # if the user asks for it and there is an archlib in the .par
+    if ($user->{auto_inst_lib_conversion} and $par_has_archlib) {
+      $target->{inst_lib} = $target->{inst_archlib};
     }
 
     return $target;
