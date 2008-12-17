@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.40';
+$VERSION    = '0.41';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -33,7 +33,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.40 of PAR::Dist, released October 27, 2008.
+This document describes version 0.41 of PAR::Dist, released December 17, 2008.
 
 =head1 SYNOPSIS
 
@@ -268,7 +268,10 @@ YAML
     $dist ||= File::Spec->catfile($cwd, $file) if $cwd;
 
     if ($dist and $file ne $dist) {
-        rename( $file => $dist );
+        if ( File::Copy::copy($file, $dist) ) {
+          die "Cannot copy $file: $!";
+        }
+        unlink $file;
         $file = $dist;
     }
 

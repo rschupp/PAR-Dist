@@ -1,3 +1,7 @@
+By: smueller on 2008/12/17
+    * Apply patch for blib_to_par across file system boundaries from Radek.
+    * This is 0.41.
+____________________________________________________________________________
 By: smueller on 2008/10/27
     * Rewrite parts of the install_par docs.
     * Add the esoteric auto_inst_lib_conversion parameter to install_par.
