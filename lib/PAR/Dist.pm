@@ -269,9 +269,11 @@ YAML
 
     if ($dist and $file ne $dist) {
         if ( File::Copy::copy($file, $dist) ) {
+          unlink $file;
+        } else {
           die "Cannot copy $file: $!";
         }
-        unlink $file;
+
         $file = $dist;
     }
 
