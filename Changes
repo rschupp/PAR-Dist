@@ -1,3 +1,9 @@
+By: smueller on 2009/01/03
+    * Apply *correct* patch for blib_to_par across file system
+      boundaries from Radek. (Radek's patch was correct, just not my
+      application.)
+    * This is 0.42.
+____________________________________________________________________________
 By: smueller on 2008/12/17
     * Apply patch for blib_to_par across file system boundaries from Radek.
     * This is 0.41.
