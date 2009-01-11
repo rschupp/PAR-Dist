@@ -107,7 +107,7 @@ under the current directory if unspecified.  If F<blib/> does not exist,
 it automatically runs F<Build>, F<make>, F<Build.PL> or F<Makefile.PL> to
 create it.
 
-Returns the filename or the generated PAR distribution.
+Returns the filename of the generated PAR distribution.
 
 Valid parameters are:
 
