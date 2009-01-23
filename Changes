@@ -1,3 +1,8 @@
+By: smueller on 2009/01/23
+    * Don't rely on the return value of ExtUtils::Install::(un)?install
+      to indicate success or failure of the (un)?installation.
+    * This is 0.43.
+____________________________________________________________________________
 By: smueller on 2009/01/03
     * Apply *correct* patch for blib_to_par across file system
       boundaries from Radek. (Radek's patch was correct, just not my

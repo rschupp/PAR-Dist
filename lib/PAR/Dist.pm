@@ -2,7 +2,7 @@ package PAR::Dist;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.42';
+$VERSION    = '0.43';
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -33,7 +33,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.42 of PAR::Dist, released January 3, 2009.
+This document describes version 0.43 of PAR::Dist, released January 23, 2009.
 
 =head1 SYNOPSIS
 
@@ -456,7 +456,6 @@ sub _install_or_uninstall {
     $name =~ s{::|-}{/}g;
     require ExtUtils::Install;
 
-    my $rv;
     if ($action eq 'install') {
         my $target = _installation_target( File::Spec->curdir, $name, \%args );
         my $custom_targets = $args{custom_targets} || {};
@@ -464,12 +463,12 @@ sub _install_or_uninstall {
         
         my $uninstall_shadows = $args{uninstall_shadows};
         my $verbose = $args{verbose};
-        $rv = ExtUtils::Install::install($target, $verbose, 0, $uninstall_shadows);
+        ExtUtils::Install::install($target, $verbose, 0, $uninstall_shadows);
     }
     elsif ($action eq 'uninstall') {
         require Config;
         my $verbose = $args{verbose};
-        $rv = ExtUtils::Install::uninstall(
+        ExtUtils::Install::uninstall(
             $args{packlist_read}||"$Config::Config{installsitearch}/auto/$name/.packlist",
             $verbose
         );
@@ -479,7 +478,8 @@ sub _install_or_uninstall {
 
     chdir($old_dir);
     File::Path::rmtree([$tmpdir]);
-    return $rv;
+
+    return 1;
 }
 
 # Returns the default installation target as used by
