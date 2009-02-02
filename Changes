@@ -1,3 +1,9 @@
+By: smueller on 2009/02/02
+    * Abandon support for perl 5.005.
+    * Merging of the various requires-like META.yml sections in
+      merge_par.
+    * This is 0.44.
+____________________________________________________________________________
 By: smueller on 2009/01/23
     * Don't rely on the return value of ExtUtils::Install::(un)?install
       to indicate success or failure of the (un)?installation.
