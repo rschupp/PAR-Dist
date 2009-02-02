@@ -1,13 +1,12 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test;
+use Test::More;
 use vars '$loaded';
-
 
 BEGIN { $loaded = eval { require PAR::Dist; 1 } };
 BEGIN {
-  my $tests = 25;
+  my $tests = 29;
   if ($loaded) {  
     # skip these tests without YAML loader or without (A::Zip or zipo/unzip)
     $PAR::Dist::DEBUG = 1;
@@ -81,6 +80,25 @@ my %provides_expect = (
   },
 );
 
+my %requires_expect = (
+  "Math::Symbolic" => '0.507',
+  "Math::Symbolic::Custom::Pattern" => '1.20',
+  "base" =>  '2.11',
+  "namespace::clean" =>  '0.08',
+  "Test::More" => '0',
+);
+
+my %build_requires_expect = (
+  "Test::More" => '0.1',
+  "Test::Differences" => undef,
+);
+
+my %recommends_expect = (
+  "Test::Pod" => '1.0',
+  "Test::Pod::Coverage" => '1.0',
+);
+
+
 PAR::Dist::merge_par(@tmp);
 
 ok(1); # got to this point
@@ -93,7 +111,6 @@ ok(defined($meta));
 my $result = $y_func->{Load}->( $meta );
 ok(defined $result);
 $result = $result->[0] if ref($result) eq 'ARRAY';
-use Data::Dumper;
 
 my $provides = $result->{provides};
 ok(ref($provides) eq 'HASH');
@@ -112,5 +129,9 @@ foreach my $module (keys %provides_expect) {
   }
 }
 
+is_deeply($result->{requires}, \%requires_expect, "requires merged as expected");
+is_deeply($result->{build_requires}, \%build_requires_expect, "build_requires merged as expected");
+is_deeply($result->{configure_requires}, undef, "configure_requires merged as expected");
+is_deeply($result->{recommends}, \%recommends_expect, "recommends merged as expected");
 
 __END__
