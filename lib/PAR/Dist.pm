@@ -1,4 +1,6 @@
 package PAR::Dist;
+use 5.006;
+use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
@@ -23,7 +25,6 @@ $VERSION    = '0.43';
 
 $DEBUG = 0;
 
-use strict;
 use Carp qw/carp croak/;
 use File::Spec;
 
@@ -621,7 +622,8 @@ This will merge the distributions C<foo.par>, C<bar.par> and C<baz.par>
 into the distribution C<foo.par>. C<foo.par> will be overwritten!
 
 The original META.yml of C<foo.par> is retained, but augmented with any
-C<provides> sections from the other C<.par> files.
+C<provides>, C<requires>, C<recommends>, C<build_requires>, and
+C<configure_requires> sections from the other C<.par> files.
 
 =cut
 
@@ -755,12 +757,24 @@ sub _merge_meta {
   my $orig_tree  = (ref($orig_meta) eq 'ARRAY' ? $orig_meta->[0] : $orig_meta);
   my $extra_tree = (ref($extra_meta) eq 'ARRAY' ? $extra_meta->[0] : $extra_meta);
 
-  # do nothing if the extra meta has no provides field.
-  return() if not exists $extra_tree->{provides};  
+  _merge_provides($orig_tree, $extra_tree);
+  _merge_requires($orig_tree, $extra_tree);
+  
+  $yaml_functions->{DumpFile}->($meta_orig_file, $orig_meta);
 
-  my $extra_provides = $extra_tree->{provides};
-  $orig_tree->{provides} = {} if not defined $orig_tree->{provides};
-  my $orig_provides = $orig_tree->{provides};
+  return 1;
+}
+
+# merge the two-level provides sections of META.yml
+sub _merge_provides {
+  my $orig_hash  = shift;
+  my $extra_hash = shift;
+
+  return() if not exists $extra_hash->{provides};
+  $orig_hash->{provides} ||= {};
+
+  my $orig_provides  = $orig_hash->{provides};
+  my $extra_provides = $extra_hash->{provides};
 
   # two level clone is enough wrt META spec 1.4
   # overwrite the original provides since we're also overwriting the files.
@@ -770,12 +784,24 @@ sub _merge_meta {
     $mod_hash{$_} = $extra_mod_hash->{$_} for keys %$extra_mod_hash;
     $orig_provides->{$module} = \%mod_hash;
   }
-  
-  $yaml_functions->{DumpFile}->($meta_orig_file, $orig_meta);
-
-  return 1;
 }
 
+# merge the single-level requires-like sections of META.yml
+sub _merge_requires {
+  my $orig_hash  = shift;
+  my $extra_hash = shift;
+
+  foreach my $type (qw(requires build_requires configure_requires recommends)) {
+    next if not exists $extra_hash->{$type};
+    $orig_hash->{$type} ||= {};
+    
+    # one level clone is enough wrt META spec 1.4
+    foreach my $module (keys %{ $extra_hash->{$type} }) {
+      # FIXME there should be a version comparison here, BUT how are we going to do that without a guaranteed version.pm?
+      $orig_hash->{$type}{$module} = $extra_hash->{$type}{$module}; # assign version and module name
+    }
+  }
+}
 
 =head2 remove_man
 
