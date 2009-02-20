@@ -13,13 +13,11 @@ BEGIN {
     my $tools = PAR::Dist::_check_tools();
     $PAR::Dist::DEBUG = 0;
     if (not defined $tools->{DumpFile}) {
-      plan tests => 1;
-      skip("Skip because no YAML loader/dumper could be found");
+      plan skip_all => "Skip because no YAML loader/dumper could be found";
       exit();
     }
     elsif (not defined $tools->{zip}) {
-      plan tests => 1;
-      skip("Skip because neither Archive::Zip nor zip/unzip could be found");
+      plan skip_all => "Skip because neither Archive::Zip nor zip/unzip could be found";
       exit();
     }
     else {
