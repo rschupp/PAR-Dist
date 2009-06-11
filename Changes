@@ -1,5 +1,6 @@
 By: smueller on 2009/02/20
     * Fix test skipping if certain optional dependencies couldn't be found.
+    * This is 0.45.
 ____________________________________________________________________________
 By: smueller on 2009/02/02
     * Abandon support for perl 5.005.
