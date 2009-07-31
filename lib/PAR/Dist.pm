@@ -4,7 +4,7 @@ use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.45';
+$VERSION    = '0.46'; # Change version in POD, too!
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -34,7 +34,7 @@ PAR::Dist - Create and manipulate PAR distributions
 
 =head1 VERSION
 
-This document describes version 0.45 of PAR::Dist, released June 11, 2009.
+This document describes version 0.46 of PAR::Dist, released July 31, 2009.
 
 =head1 SYNOPSIS
 
@@ -1378,7 +1378,8 @@ sub _check_tools {
   }
 
   $tools->{zip} = undef;
-  if (eval {require Archive::Zip; 1;}) {
+  # A::Zip 1.28 was a broken release...
+  if (eval {require Archive::Zip; 1;} and $Archive::Zip::VERSION ne '1.28') {
     warn "Using Archive::Zip as ZIP tool.\n" if $DEBUG;
     $tools->{zip} = 'Archive::Zip';
   }
@@ -1387,7 +1388,7 @@ sub _check_tools {
     $tools->{zip} = 'zip';
   }
   else {
-    warn "Found neither Archive::Zip nor ZIP/UNZIP as valid ZIP tools.\n" if $DEBUG;
+    warn "Found neither Archive::Zip (version != 1.28) nor ZIP/UNZIP as valid ZIP tools.\n" if $DEBUG;
     $tools->{zip} = undef;
   }
 
