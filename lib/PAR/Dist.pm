@@ -1405,7 +1405,7 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2007
 
-Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2008
+Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2009
 
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
@@ -1415,7 +1415,7 @@ Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2003-2008 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2003-2009 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
