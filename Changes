@@ -1,3 +1,8 @@
+By: smueller on 2011/11/05
+    * Prefer MYMETA.yml over META.yml if possible.
+    * Try YAML implementations in different order (XS first).
+    * This is 0.48.
+____________________________________________________________________________
 By: smueller on 2009/11/29
     * POD fixes (Frank Wiegand)
     * This is 0.47.
