@@ -613,7 +613,7 @@ sub verify_par {
 I<Note:> Since version 0.32 of PAR::Dist, this function requires a YAML
 reader. The order of precedence is:
 
-  YAML YAML::Syck YAML::Tiny YAML::XS
+  YAML:XS YAML YAML::Syck YAML::Tiny
 
 Merges two or more PAR distributions into one. First argument must
 be the name of the distribution you want to merge all others into.
@@ -1344,12 +1344,12 @@ sub _MI_can_run {
 # entries with sub references on success.
 sub _get_yaml_functions {
   # reasoning for the ranking here:
-  # - syck is fast and reasonably complete
+  # - XS is the de-facto standard nowadays.
   # - YAML.pm is slow and aging
+  # - syck is fast and reasonably complete
   # - Tiny is only a very small subset
-  # - XS is very new and I'm not sure it's ready for prime-time yet
   # - Parse... is only a reader and only deals with the same subset as ::Tiny
-  my @modules = qw(YAML::Syck YAML YAML::Tiny YAML::XS Parse::CPAN::Meta);
+  my @modules = qw(YAML::XS YAML YAML::Tiny YAML::Syck Parse::CPAN::Meta);
 
   my %yaml_functions;
   foreach my $module (@modules) {
