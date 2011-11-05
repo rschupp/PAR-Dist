@@ -5,8 +5,8 @@ require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
 $VERSION    = '0.48'; # Change version in POD, too!
-@ISA	    = 'Exporter';
-@EXPORT	    = qw/
+@ISA        = 'Exporter';
+@EXPORT     = qw/
   blib_to_par
   install_par
   uninstall_par
@@ -46,11 +46,11 @@ In programs:
 
     use PAR::Dist;
 
-    my $dist = blib_to_par();	# make a PAR file using ./blib/
-    install_par($dist);		# install it into the system
-    uninstall_par($dist);	# uninstall it from the system
-    sign_par($dist);		# sign it using Module::Signature
-    verify_par($dist);		# verify it using Module::Signature
+    my $dist = blib_to_par(); # make a PAR file using ./blib/
+    install_par($dist);       # install it into the system
+    uninstall_par($dist);     # uninstall it from the system
+    sign_par($dist);          # sign it using Module::Signature
+    verify_par($dist);        # verify it using Module::Signature
 
     install_par("http://foo.com/DBI-1.37-MSWin32-5.8.0.par"); # works too
     install_par("http://foo.com/DBI-1.37"); # auto-appends archname + perlver
@@ -150,11 +150,11 @@ sub blib_to_par {
     # don't use 'my $foo ... if ...' it creates a static variable!
     my $quiet = $args{quiet} || 0;
     my $dist;
-    my $path	= $args{path};
-    $dist	= File::Spec->rel2abs($args{dist}) if $args{dist};
-    my $name	= $args{name};
-    my $version	= $args{version};
-    my $suffix	= $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par";
+    my $path    = $args{path};
+    $dist       = File::Spec->rel2abs($args{dist}) if $args{dist};
+    my $name    = $args{name};
+    my $version = $args{version};
+    my $suffix  = $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par";
     my $cwd;
 
     if (defined $path) {
@@ -176,10 +176,10 @@ sub blib_to_par {
     } , 'blib' );
 
     print MANIFEST join(
-	"\n",
-	'    <!-- accessible as jar:file:///NAME.par!/MANIFEST in compliant browsers -->',
-	(sort @files),
-	q(    # <html><body onload="var X=document.body.innerHTML.split(/\n/);var Y='<iframe src=&quot;META.yml&quot; style=&quot;float:right;height:40%;width:40%&quot;></iframe><ul>';for(var x in X){if(!X[x].match(/^\s*#/)&&X[x].length)Y+='<li><a href=&quot;'+X[x]+'&quot;>'+X[x]+'</a>'}document.body.innerHTML=Y">)
+        "\n",
+        '    <!-- accessible as jar:file:///NAME.par!/MANIFEST in compliant browsers -->',
+        (sort @files),
+        q(    # <html><body onload="var X=document.body.innerHTML.split(/\n/);var Y='<iframe src=&quot;META.yml&quot; style=&quot;float:right;height:40%;width:40%&quot;></iframe><ul>';for(var x in X){if(!X[x].match(/^\s*#/)&&X[x].length)Y+='<li><a href=&quot;'+X[x]+'&quot;>'+X[x]+'</a>'}document.body.innerHTML=Y">)
     );
     close MANIFEST;
 
@@ -571,7 +571,7 @@ sub _directory_not_empty {
     my($dir) = @_;
     my $files = 0;
     File::Find::find(sub {
-	    return if $_ eq ".exists";
+        return if $_ eq ".exists";
         if (-f) {
             $File::Find::prune++;
             $files = 1;
@@ -1037,7 +1037,7 @@ sub _fetch {
     %escapes = map { chr($_) => sprintf("%%%02X", $_) } 0..255 unless %escapes;
 
     $args{dist} =~ s{^cpan://((([a-zA-Z])[a-zA-Z])[-_a-zA-Z]+)/}
-		    {http://www.cpan.org/modules/by-authors/id/\U$3/$2/$1\E/};
+                    {http://www.cpan.org/modules/by-authors/id/\U$3/$2/$1\E/};
 
     my $file = $args{dist};
     $file =~ s/([^\w\.])/$escapes{$1}/g;
@@ -1135,51 +1135,50 @@ This function is not exported by default.
 =cut
 
 sub parse_dist_name {
-	my $file = shift;
-	return(undef, undef, undef, undef) if not defined $file;
+    my $file = shift;
+    return(undef, undef, undef, undef) if not defined $file;
 
-	(undef, undef, $file) = File::Spec->splitpath($file);
-	
-	my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
-	$file =~ s/\.(?:par|tar\.gz|tar)$//i;
-	my @elem = split /-/, $file;
-	my (@dn, $dv, @arch, $pv);
-	while (@elem) {
-		my $e = shift @elem;
-		if (
+    (undef, undef, $file) = File::Spec->splitpath($file);
+    
+    my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
+    $file =~ s/\.(?:par|tar\.gz|tar)$//i;
+    my @elem = split /-/, $file;
+    my (@dn, $dv, @arch, $pv);
+    while (@elem) {
+        my $e = shift @elem;
+        if (
             $e =~ /^$version$/o
             and not(# if not next token also a version
                     # (assumes an arch string doesnt start with a version...)
                 @elem and $elem[0] =~ /^$version$/o
             )
         ) {
-            
-			$dv = $e;
-			last;
-		}
-		push @dn, $e;
-	}
-	
-	my $dn;
-	$dn = join('-', @dn) if @dn;
+            $dv = $e;
+            last;
+        }
+        push @dn, $e;
+    }
+    
+    my $dn;
+    $dn = join('-', @dn) if @dn;
 
-	if (not @elem) {
-		return( $dn, $dv, undef, undef);
-	}
+    if (not @elem) {
+        return( $dn, $dv, undef, undef);
+    }
 
-	while (@elem) {
-		my $e = shift @elem;
-		if ($e =~ /^$version|any_version$/) {
-			$pv = $e;
-			last;
-		}
-		push @arch, $e;
-	}
+    while (@elem) {
+        my $e = shift @elem;
+        if ($e =~ /^$version|any_version$/) {
+            $pv = $e;
+            last;
+        }
+        push @arch, $e;
+    }
 
-	my $arch;
-	$arch = join('-', @arch) if @arch;
+    my $arch;
+    $arch = join('-', @arch) if @arch;
 
-	return($dn, $dv, $arch, $pv);
+    return($dn, $dv, $arch, $pv);
 }
 
 =head2 generate_blib_stub
@@ -1216,9 +1215,9 @@ sub generate_blib_stub {
     my $dist = $args{dist};
     require Config;
     
-    my $name	= $args{name};
-    my $version	= $args{version};
-    my $suffix	= $args{suffix};
+    my $name    = $args{name};
+    my $version = $args{version};
+    my $suffix  = $args{suffix};
 
     my ($parse_name, $parse_version, $archname, $perlversion)
       = parse_dist_name($dist);
