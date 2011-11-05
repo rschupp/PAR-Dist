@@ -4,7 +4,7 @@ use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.47'; # Change version in POD, too!
+$VERSION    = '0.48'; # Change version in POD, too!
 @ISA	    = 'Exporter';
 @EXPORT	    = qw/
   blib_to_par
@@ -183,7 +183,11 @@ sub blib_to_par {
     );
     close MANIFEST;
 
-    if (open(OLD_META, "META.yml")) {
+    # if MYMETA.yml exists, that takes precedence over META.yml
+    my $meta_file_name = "META.yml";
+    my $mymeta_file_name = "MYMETA.yml";
+    $meta_file_name = -s $mymeta_file_name ? $mymeta_file_name : $meta_file_name;
+    if (open(OLD_META, $meta_file_name)) {
         while (<OLD_META>) {
             if (/^distribution_type:/) {
                 print META "distribution_type: par\n";
@@ -1405,7 +1409,7 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2007
 
-Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2009
+Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2011
 
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
@@ -1415,7 +1419,7 @@ Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2003-2009 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2003-2011 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
