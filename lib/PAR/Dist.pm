@@ -1168,7 +1168,7 @@ sub parse_dist_name {
 
     while (@elem) {
         my $e = shift @elem;
-        if ($e =~ /^$version|any_version$/) {
+        if ($e =~ /^(?:$version|any_version)$/) {
             $pv = $e;
             last;
         }
