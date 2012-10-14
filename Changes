@@ -1,3 +1,8 @@
+By: rschupp on 2012/10/15
+    * Fix RT #78194: PAR::Dist::parse_dist_name mis-parses par file name
+      Patch from KENO, thanks!
+    * This is 0.49.
+____________________________________________________________________________
 By: smueller on 2011/11/05
     * Prefer MYMETA.yml over META.yml if possible.
     * Try YAML implementations in different order (XS first).
