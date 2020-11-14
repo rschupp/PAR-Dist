@@ -1091,6 +1091,7 @@ sub _unzip_to_tmpdir {
     my %args = &_args;
 
     require File::Temp;
+    require Cwd;
 
     my $dist   = File::Spec->rel2abs($args{dist});
     my $tmpdirname = File::Spec->catdir(File::Spec->tmpdir, "parXXXXX");
@@ -1098,6 +1099,8 @@ sub _unzip_to_tmpdir {
       or die "Could not create temporary directory from template '$tmpdirname': $!";
     my $path = $tmpdir;
     $path = File::Spec->catdir($tmpdir, $args{subdir}) if defined $args{subdir};
+    $path = Cwd::realpath($path);  #  symlinks cause Archive::Zip issues on some systems
+
     _unzip(dist => $dist, path => $path);
 
     chdir $tmpdir;
