@@ -1,3 +1,10 @@
+0.50  2020-11-17
+
+- Fix RT#132067: fix for Archive::Zip related test failures due to symlinks
+  Thanks, Shawn Laffan!
+
+- create repo on GitHub, update metadata
+
 0.49  2012-10-15
 
 - Fix RT #78194: PAR::Dist::parse_dist_name mis-parses par file name
