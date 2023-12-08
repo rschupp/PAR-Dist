@@ -1411,8 +1411,10 @@ Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2011
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
 and participate in the discussion.
+Archives of the mailing list are available at
+E<lt>https://www.mail-archive.com/par@perl.org/E<gt> or E<lt>https://groups.google.com/g/perl.parE<gt>.
 
-Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
+Please send bug reports to E<lt>https://github.com/rschupp/PAR-Dist/issuesE<gt>.
 
 =head1 COPYRIGHT
 
